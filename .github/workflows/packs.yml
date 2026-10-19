@@ -44,7 +44,9 @@ jobs:
           node-version: 22
 
       - name: Тесты
-        run: node --test tools/tests/
+        run: |
+          node --version
+          node --test tools/tests/*.test.mjs
 
       # GigaChat uses a certificate from the Russian Trusted Root CA (НУЦ Минцифры),
       # which is not in the default trust store. Link from developers.sber.ru/docs/ru/gigachat/certificates.
