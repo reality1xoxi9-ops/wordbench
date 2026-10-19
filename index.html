@@ -1,3 +1,12 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Wordbench">
+<meta name="theme-color" content="#F1F4F9">
 <title>Wordbench</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Onest:wght@400;500;600;800&display=swap">
@@ -60,6 +69,8 @@ input[type=text],input[type=search],input:not([type]){background:var(--bg);borde
 textarea{width:100%;min-height:110px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 
 /* home */
+.bk .chk{margin:6px 0}
+.bkwarn{background:var(--mark);color:var(--mark-ink);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-weight:600}
 .plan{list-style:none;counter-reset:s;padding:0;margin:16px 0;display:grid;gap:8px}
 .plan li{counter-increment:s}
 .plan button{width:100%;display:flex;gap:14px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer}
@@ -1487,19 +1498,49 @@ function save(){
     if(dbRef){try{await dbRef.set(data);}catch(e){}}
   },500);
 }
+function flushSave(){
+  if(!loaded)return;
+  clearTimeout(saveT);
+  const data=JSON.parse(JSON.stringify(S));
+  lsSave(data);
+  if(dbRef){try{dbRef.set(data).catch(()=>{});}catch(e){}}
+}
+// iOS unloads backgrounded pages, so the 500 ms debounced save could be lost
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSave();});
+window.addEventListener('pagehide',flushSave);
+// order: Claude db (inside claude.ai) → IndexedDB (own hosting) → localStorage
 async function initStorage(){
   try{
     if(window.claude&&window.claude.use){
       const d=await claude.use('db');
       // db snapshots are frozen: copy before merging, or every later write to S throws in strict mode
-      if(d){DB=d;dbRef=d.doc('state/main');const s=await dbRef.get();if(s.exists)Object.assign(S,JSON.parse(JSON.stringify(s.data())));loaded=true;}
+      if(d){DB=d;dbRef=d.doc('state/main');const s=await dbRef.get();if(s.exists)Object.assign(S,JSON.parse(JSON.stringify(s.data())));loaded=true;STORE_KIND='claude';}
     }
   }catch(e){}
   if(!loaded){
-    try{const raw=localStorage.getItem('wordbench-state');if(raw)Object.assign(S,JSON.parse(raw));}catch(e){}
+    try{
+      const L=await openLocalDB();
+      DB=L;dbRef=L.doc('state/main');
+      const s=await dbRef.get();
+      if(s.exists)Object.assign(S,s.data());
+      else{try{const raw=localStorage.getItem('wordbench-state');if(raw)Object.assign(S,JSON.parse(raw));}catch(e){}}
+      loaded=true;STORE_KIND='local';
+      askPersist().then(renderBackup);
+    }catch(e){DB=null;dbRef=null;}
+  }
+  if(!loaded){
+    try{const raw=localStorage.getItem('wordbench-state');if(raw)Object.assign(S,JSON.parse(raw));localStorage.setItem('wb-test','1');STORE_KIND='ls';}catch(e){STORE_KIND='none';}
     loaded=true;
   }
+  normalizeState();
+  if(R.pages.length)R.page=Math.min(S.pos[R.key]||0,R.pages.length-1);
+  renderAll();syncEngines();
+  if(DB){refreshLib();loadTranslations();}
+  if(STORE_KIND==='local')save();
+}
+function normalizeState(){
   S.gen=S.gen||{};S.useClaude=!!S.useClaude;
+  if(!S.pos||typeof S.pos!=='object')S.pos={};
   if(!S.stats||typeof S.stats!=='object')S.stats={};
   S.stats.done=+S.stats.done||0;S.stats.ok=+S.stats.ok||0;if(!S.stats.days||typeof S.stats.days!=='object')S.stats.days={};
   if(!Array.isArray(S.words))S.words=[];
@@ -1515,9 +1556,6 @@ async function initStorage(){
    if(!TQ.includes(e.timerQ))e.timerQ=d.timerQ;
    if(!TS.includes(e.timerS))e.timerS=d.timerS;
    e.timerOn=!!e.timerOn;S.exSet=e;}
-  if(R.pages.length)R.page=Math.min(S.pos[R.key]||0,R.pages.length-1);
-  renderAll();syncEngines();
-  if(DB){refreshLib();loadTranslations();}
 }
 let SAMPLE=null;
 async function initSample(){
@@ -1535,6 +1573,165 @@ function addWord(w,tr,ctx){
   if(S.words.some(x=>x.w===w))return false;
   S.words.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),w,tr,ctx:ctx||'',box:1,next:dayNum()});
   save();return true;
+}
+
+/* ---------- local storage (outside Claude): IndexedDB with the same API as the db capability ---------- */
+let STORE_KIND='none';            // 'claude' | 'local' | 'ls' | 'none'
+let PERSISTED=null;               // true/false/null (unknown)
+function idbReq(r){return new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function openLocalDB(){
+  if(!('indexedDB' in window))throw new Error('no idb');
+  const open=indexedDB.open('wordbench',1);
+  open.onupgradeneeded=()=>{if(!open.result.objectStoreNames.contains('docs'))open.result.createObjectStore('docs');};
+  const db=await idbReq(open);
+  const tx=(mode)=>db.transaction('docs',mode).objectStore('docs');
+  const snap=(id,v)=>({id,exists:v!==undefined,data:()=>v});
+  const docRef=path=>({
+    id:path.split('/').pop(),
+    async get(){return snap(path.split('/').pop(),await idbReq(tx('readonly').get(path)));},
+    async set(v){await idbReq(tx('readwrite').put(JSON.parse(JSON.stringify(v)),path));},
+    async delete(){await idbReq(tx('readwrite').delete(path));},
+    collection:name=>colRef(path+'/'+name)
+  });
+  const colRef=path=>{
+    let lim=1e9;
+    const api={
+      doc:id=>docRef(path+'/'+id),
+      limit(n){lim=n;return api;},
+      async get(){
+        const pre=path+'/',range=IDBKeyRange.bound(pre,pre+'￿');
+        const store=tx('readonly');
+        const [keys,vals]=await Promise.all([idbReq(store.getAllKeys(range)),idbReq(store.getAll(range))]);
+        const docs=[];
+        keys.forEach((k,i)=>{const rest=k.slice(pre.length);if(!rest.includes('/')&&docs.length<lim)docs.push(snap(rest,vals[i]));});
+        return {docs};
+      }
+    };
+    return api;
+  };
+  return {
+    local:true,
+    doc:docRef,
+    collection:colRef,
+    async dumpAll(){
+      const store=tx('readonly');
+      const [keys,vals]=await Promise.all([idbReq(store.getAllKeys()),idbReq(store.getAll())]);
+      const out={};keys.forEach((k,i)=>{out[k]=vals[i];});return out;
+    },
+    async putAll(obj){
+      const store=tx('readwrite');
+      for(const k of Object.keys(obj))store.put(obj[k],k);
+      await new Promise((res,rej)=>{store.transaction.oncomplete=res;store.transaction.onerror=()=>rej(store.transaction.error);});
+    }
+  };
+}
+async function askPersist(){
+  try{
+    if(navigator.storage&&navigator.storage.persisted){
+      PERSISTED=await navigator.storage.persisted();
+      if(!PERSISTED&&navigator.storage.persist)PERSISTED=await navigator.storage.persist();
+    }
+  }catch(e){}
+}
+
+/* ---------- saving a file: Claude downloads capability or a normal browser download ---------- */
+async function saveFile(filename,blob){
+  try{
+    if(window.claude&&window.claude.use){
+      const dl=await claude.use('downloads');
+      if(dl){await dl.save({filename,data:blob});return true;}
+    }
+  }catch(e){if(e&&e.code==='declined')return false;}
+  try{
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    return true;
+  }catch(e){return false;}
+}
+
+/* ---------- backup ---------- */
+const BACKUP_DAYS=7;
+async function collectDocs(withBooks){
+  if(!DB)return {};
+  if(DB.dumpAll){
+    const all=await DB.dumpAll(),out={};
+    Object.keys(all).forEach(k=>{if(k==='state/main')return;if(!withBooks&&/^books\/[^/]+\/text\//.test(k))return;out[k]=all[k];});
+    return out;
+  }
+  // Claude db: walk books, their text chunks and translations
+  const out={};
+  try{
+    const lib=await DB.collection('books').get();
+    for(const b of lib.docs){
+      const id=b.id,m=b.data()||{};out['books/'+id]=m;
+      const pg=await DB.collection('books/'+id+'/pages').limit(1000).get();
+      pg.docs.forEach(d=>{out['books/'+id+'/pages/'+d.id]=d.data();});
+      if(withBooks)for(let k=0;k<(m.chunks||0);k++){const c=await DB.doc('books/'+id+'/text/c'+k).get();if(c.exists)out['books/'+id+'/text/c'+k]=c.data();}
+    }
+  }catch(e){}
+  return out;
+}
+async function exportBackup(){
+  const msg=$('#bkMsg'),withBooks=$('#bkBooks').checked;
+  msg.textContent='Готовлю копию…';
+  try{
+    clearTimeout(saveT);
+    const data={app:'wordbench',v:1,created:new Date().toISOString(),state:JSON.parse(JSON.stringify(S)),docs:await collectDocs(withBooks)};
+    const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+    const name='wordbench-backup-'+keyOf(new Date())+'.json';
+    if(await saveFile(name,blob)){
+      S.lastBackup=Date.now();save();renderBackup();
+      msg.textContent=`Файл ${name} сохранён (${(blob.size/1024).toFixed(0)} КБ). На iPhone выберите «Сохранить в Файлы» и папку в iCloud Drive.`;
+    }else msg.textContent='Скачивание отменено.';
+  }catch(e){msg.textContent='Не удалось создать копию.';}
+}
+let pendingImport=null;
+async function readBackup(file){
+  const msg=$('#bkMsg');pendingImport=null;$('#bkConfirm').hidden=true;
+  try{
+    const data=JSON.parse(await file.text());
+    if(!data||data.app!=='wordbench'||!data.state||typeof data.state!=='object')throw new Error('format');
+    pendingImport=data;
+    const st=data.state,words=Array.isArray(st.words)?st.words.length:0,done=(st.stats&&st.stats.done)||0;
+    const books=Object.keys(data.docs||{}).filter(k=>/^books\/[^/]+$/.test(k)).length;
+    $('#bkWhat').textContent=`Копия от ${new Date(data.created).toLocaleString('ru-RU')}: слов ${words}, решено заданий ${done}, книг ${books}. Текущий прогресс на этом устройстве будет заменён.`;
+    $('#bkConfirm').hidden=false;msg.textContent='';
+  }catch(e){msg.textContent='Это не файл резервной копии Wordbench или он повреждён.';}
+}
+async function applyBackup(){
+  const data=pendingImport,msg=$('#bkMsg');if(!data)return;
+  try{
+    const keep={lastBackup:Date.now()};
+    Object.keys(S).forEach(k=>delete S[k]);
+    Object.assign(S,{level:'A1',words:[],stats:{done:0,ok:0,days:{}},pos:{},gen:{},read:{},tres:{},useClaude:false},data.state,keep);
+    normalizeState();
+    if(DB){
+      const docs=data.docs||{};
+      if(DB.putAll)await DB.putAll(docs);
+      else for(const k of Object.keys(docs))await DB.doc(k).set(docs[k]);
+    }
+    clearTimeout(saveT);
+    const plain=JSON.parse(JSON.stringify(S));lsSave(plain);if(dbRef)await dbRef.set(plain);
+    pendingImport=null;$('#bkConfirm').hidden=true;
+    renderAll();if(DB){refreshLib();loadTranslations();}
+    $('#bkMsg').textContent='Прогресс восстановлен: слова, статистика, книги и переводы.';
+  }catch(e){msg.textContent='Не удалось восстановить копию.';}
+}
+
+/* ---------- status block on the home screen ---------- */
+async function renderBackup(){
+  const box=$('#bkStatus');if(!box)return;
+  const where={claude:'в облаке Claude (и копия в этом браузере)',local:'в памяти этого браузера (IndexedDB)',ls:'в памяти этого браузера (localStorage)',none:'не сохраняется'}[STORE_KIND];
+  let use='';
+  try{if(navigator.storage&&navigator.storage.estimate){const e=await navigator.storage.estimate();use=` Занято около ${(e.usage/1048576).toFixed(1)} МБ.`;}}catch(e){}
+  const last=S.lastBackup?new Date(S.lastBackup).toLocaleDateString('ru-RU'):'ещё не делалась';
+  box.innerHTML=`Прогресс хранится ${esc(where)}.${use}`+
+    (STORE_KIND!=='claude'?` ${PERSISTED?'Браузер не будет удалять эти данные сам.':'Браузер может очистить данные при нехватке места: держите сайт на экране «Домой» и делайте копии.'}`:'')+
+    `<br>Последняя резервная копия: <b>${esc(last)}</b>.`;
+  const old=!S.lastBackup||Date.now()-S.lastBackup>BACKUP_DAYS*864e5;
+  const has=S.words.length||S.stats.done;
+  $('#bkWarn').hidden=!(old&&has&&STORE_KIND!=='claude');
 }
 
 /* ---------- navigation ---------- */
@@ -1589,9 +1786,27 @@ function renderHome(){
     <div><dt>Дней подряд</dt><dd>${streak()}</dd></div>
     <div><dt>Тем ${S.level} прочитано</dt><dd>${readCount(S.level)} / ${THEORY[S.level].length}</dd></div>
   </dl>
+  <h2>Мои данные</h2>
+  <div class="card bk">
+    <div class="bkwarn" id="bkWarn" hidden>Давно не было резервной копии. Сохраните её, чтобы не потерять прогресс.</div>
+    <p id="bkStatus" class="muted small"></p>
+    <label class="chk"><input type="checkbox" id="bkBooks"><span>Включить в копию тексты книг (файл будет больше). Переводы страниц сохраняются всегда.</span></label>
+    <div class="row"><button class="btn" id="bkSave" type="button">Скачать копию</button><label class="btn ghost" for="bkFile">Восстановить из файла</label><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
+    <div id="bkConfirm" class="fb bad" hidden><p id="bkWhat"></p><div class="row"><button class="btn" id="bkApply" type="button">Заменить прогресс</button><button class="btn ghost" id="bkCancel" type="button">Отмена</button></div></div>
+    <p id="bkMsg" class="muted small" aria-live="polite"></p>
+  </div>
   <h2>Что значат уровни</h2>
   <ul class="lvl">${LEVELS.map(l=>`<li><b>${l}</b><div>${LEVEL_INFO[l][0]}<small> Ориентир: ${LEVEL_INFO[l][1]}.</small></div></li>`).join('')}</ul>`;
+  renderBackup();
 }
+$('#v-home').addEventListener('click',e=>{
+  if(e.target.closest('#bkSave'))exportBackup();
+  else if(e.target.closest('#bkApply'))applyBackup();
+  else if(e.target.closest('#bkCancel')){pendingImport=null;$('#bkConfirm').hidden=true;}
+});
+$('#v-home').addEventListener('change',e=>{
+  if(e.target.id==='bkFile'&&e.target.files[0]){readBackup(e.target.files[0]);e.target.value='';}
+});
 
 /* ---------- theory / methods / materials ---------- */
 /* ---------- theory: topic list and full topic page ---------- */
@@ -2649,13 +2864,10 @@ $('#trFile').addEventListener('change',async e=>{
 $('#expParts').addEventListener('click',async e=>{
   const b=e.target.closest('[data-part]');if(!b)return;
   const parts=exportParts(),k=+b.dataset.part;
-  let dl=null;
-  try{dl=await claude.use('downloads');}catch(err){}
-  if(!dl){setProg('Скачивание недоступно в этом окне. Откройте сайт в приложении Claude или в браузере.');return;}
   try{
     const blob=await buildDocx(parts[k]);
     const slug=(R.title.replace(/[^\p{L}\p{N}]+/gu,'_').replace(/^_|_$/g,'')||'book').slice(0,40);
-    await dl.save({filename:`${slug}_part${String(k+1).padStart(2,'0')}.docx`,data:blob});
+    if(!await saveFile(`${slug}_part${String(k+1).padStart(2,'0')}.docx`,blob)){setProg('Скачивание отменено.');return;}
     setProg('Файл сохранён. Переведите его в Google или Яндексе и загрузите обратно ниже.');
   }catch(err){if(!err||err.code!=='declined')setProg('Не удалось сохранить файл.');}
 });
