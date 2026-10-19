@@ -222,6 +222,18 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
 #deckList li{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 #deckList li small{display:block;color:var(--muted);font-family:var(--f-read)}
 #deckList li .btn{flex:none;padding:8px 12px;min-height:40px}
+.packs{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
+.pk{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 14px}
+.pk>summary{align-items:center}
+.pkh b{display:block}
+.pkh small{display:block;color:var(--muted);font-weight:400}
+.pknew{flex:none;margin-left:auto;background:var(--mark);color:var(--mark-ink);border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:700}
+.pk .body{max-width:none}
+.dlist{list-style:none;padding:0;margin:6px 0 0}
+.dlist li{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.dlist li small{display:block;color:var(--muted);font-family:var(--f-read)}
+.dlist li small.pknote{font-family:var(--f-ui);font-size:.8rem}
+.dlist li .btn{flex:none;padding:8px 12px;min-height:40px}
 
 .tree{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .tr-head{width:100%;display:flex;align-items:center;gap:10px;min-height:54px;padding:8px 16px;background:none;border:0;cursor:pointer;text-align:left}
@@ -437,6 +449,11 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
     <section id="v-vocab" hidden>
       <h1>Карточки</h1>
       <div class="card" id="fc"></div>
+      <div id="packBox" hidden>
+        <h2>Новые подборки <span class="muted" id="packCount"></span></h2>
+        <p class="muted">Раз в неделю приходят новые слова по темам. Их составляет нейросеть, поэтому возможны неточности. Подборки сохраняются и работают без интернета.</p>
+        <ul class="packs" id="packList"></ul>
+      </div>
       <h2>Готовые подборки</h2>
       <p class="muted">Полезные слова и обороты. Выберите категорию ползунком и добавьте нужные в свои карточки.</p>
       <div class="card" id="deckCard">
@@ -1482,7 +1499,7 @@ const SENT_TR=[
 
 
 /* ---------- state + storage ---------- */
-const S={level:'A1',words:[],stats:{done:0,ok:0,days:{}},pos:{},gen:{},read:{},tres:{},useClaude:false,exSet:{cat:'level',type:'fill',diff:'mid',inp:'choose',count:10,timerOn:false,timerMode:'q',timerQ:20,timerS:5}};
+const S={level:'A1',words:[],stats:{done:0,ok:0,days:{}},pos:{},gen:{},read:{},tres:{},packsSeen:[],useClaude:false,exSet:{cat:'level',type:'fill',diff:'mid',inp:'choose',count:10,timerOn:false,timerMode:'q',timerQ:20,timerS:5}};
 let loaded=false,dbRef=null,DB=null,saveT=null;
 const pad=n=>String(n).padStart(2,'0');
 const keyOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -1537,6 +1554,7 @@ async function initStorage(){
   renderAll();syncEngines();
   if(DB){refreshLib();loadTranslations();}
   if(STORE_KIND==='local')save();
+  initPacks();
 }
 function normalizeState(){
   S.gen=S.gen||{};S.useClaude=!!S.useClaude;
@@ -1548,7 +1566,9 @@ function normalizeState(){
   if(!S.tres||typeof S.tres!=='object')S.tres={};
   {const d={cat:'level',type:'fill',diff:'mid',inp:'choose',count:10,timerOn:false,timerMode:'q',timerQ:20,timerS:5},e=Object.assign({},d,S.exSet||{});
    if(!DIFFS.some(x=>x[0]===e.diff))e.diff=d.diff;
-   if(!['level','words','book','talk','tech','news','build'].includes(e.cat)&&topicIdx(e.cat)<0)e.cat=d.cat;
+   // pack categories ("p:<id>") are kept: packs load after the state and may still arrive
+   if(!['level','words','book','talk','tech','news','build'].includes(e.cat)&&topicIdx(e.cat)<0&&!/^p:/.test(e.cat))e.cat=d.cat;
+   if(!Array.isArray(S.packsSeen))S.packsSeen=[];
    if(!['fill','order','match'].includes(e.type))e.type=d.type;
    if(!['choose','type'].includes(e.inp))e.inp=d.inp;
    if(!COUNTS.includes(e.count))e.count=d.count;
@@ -1740,7 +1760,7 @@ function show(v){
   VIEWS.forEach(x=>{$('#v-'+x).hidden=x!==v;$('[data-nav="'+x+'"]').setAttribute('aria-current',x===v?'page':'false');});
   closeSheet();
   if(v==='home')renderHome();
-  if(v==='vocab'){fcRender();renderVocab();renderDeck();}
+  if(v==='vocab'){fcRender();renderVocab();renderDeck();renderPacks();}
   if(v!=='ex')stopTimer();
   if(v==='ex'&&(S.exSet.timerOn||S.exSet.cat!=='level'))exStart();
   try{history.replaceState(null,'','#'+v);}catch(e){}
@@ -1887,8 +1907,11 @@ function renderMethods(){
   <ul class="links">${MISTAKES.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`;
 }
 function renderMaterials(){
+  // providers of the packs actually downloaded; GigaChat is the default generator
+  const prov=[...new Set([...PACKS.values()].map(p=>p.provider).filter(Boolean))].map(p=>PROVIDER_NAME[p]||p);
   $('#v-mat').innerHTML=`<h1>Материалы</h1><p class="lead">Проверенные источники. Ссылки открываются в новой вкладке.</p>`+
-  MATERIALS.map(g=>`<h2>${esc(g[0])}</h2><ul class="links">${g[1].map(l=>`<li><a href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a><small>${esc(l[2])}</small></li>`).join('')}</ul>`).join('');
+  MATERIALS.map(g=>`<h2>${esc(g[0])}</h2><ul class="links">${g[1].map(l=>`<li><a href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a><small>${esc(l[2])}</small></li>`).join('')}</ul>`).join('')+
+  `<h2>Новые подборки слов</h2><p class="muted">Подборки в «Карточках» раз в неделю составляет нейросеть ${esc(prov.length?prov.join(', '):PROVIDER_NAME.gigachat)}. Они проходят автоматическую проверку, но могут содержать неточности: сомнительные слова проверяйте в словарях выше.</p>`;
 }
 
 /* ---------- tree picker: tap the value to open a list of other options ---------- */
@@ -2011,8 +2034,14 @@ function wordsFill(){
   }
   return out;
 }
-function deckFill(id){
-  const items=DECKS[id].items,pool=items.map(x=>x[0]),out=[];
+// built-in deck or a downloaded pack, both as {label, items:[[phrase, translation, example]]}
+function getDeck(id){
+  if(DECKS[id])return DECKS[id];
+  const p=/^p:/.test(id||'')&&PACKS.get(id.slice(2));
+  return p?{label:p.title,items:p.items.map(x=>[x.w,x.tr,(x.ex[0]&&x.ex[0].en)||''])}:null;
+}
+function deckFill(deck){
+  const items=deck.items,pool=items.map(x=>x[0]),out=[];
   items.forEach(x=>{
     const c=cloze(x[2],x[0],pool,x[0]+' — '+x[1]+'.');
     if(c)out.push(c);
@@ -2029,8 +2058,8 @@ function sentOrder(list,max){
   });
   return out;
 }
-function deckOrder(id){
-  return sentOrder(DECKS[id].items.map(x=>({s:x[2],ru:'Соберите предложение с оборотом «'+x[0]+'» ('+x[1]+')'})),14);
+function deckOrder(deck){
+  return sentOrder(deck.items.filter(x=>x[2]).map(x=>({s:x[2],ru:'Соберите предложение с оборотом «'+x[0]+'» ('+x[1]+')'})),14);
 }
 /* topic exercises: built from the topic's own examples and mistakes, plus Claude items tagged with the topic */
 function topicBlocks(x,k){const out=[];x.s.forEach(s=>s[1].forEach(b=>{if(b[0]===k)out.push(...b[1]);}));return out;}
@@ -2062,7 +2091,9 @@ function topicOrder(x){
   return own.concat(genPool('order').filter(g=>g.tp===x.t));
 }
 const topicPairs=x=>topicExamples(x).filter(e=>e.en.length<=42).map(e=>[e.en,e.ru]);
-function catList(){return CATS.concat(THEORY[S.level].map((x,i)=>['t'+i,x.t]));}
+// order matters for the picker groups: base categories, then packs, then theory topics
+const packList=()=>[...PACKS.values()].sort((a,b)=>b.created.localeCompare(a.created)||a.id.localeCompare(b.id));
+function catList(){return CATS.concat(packList().map(p=>['p:'+p.id,p.title]),THEORY[S.level].map((x,i)=>['t'+i,x.t]));}
 const catLabel=c=>(catList().find(x=>x[0]===c)||[0,''])[1];
 
 function updExSum(){
@@ -2076,10 +2107,12 @@ function exStart(){
   const st=S.exSet;
   EX.src=st.cat;EX.mode=st.type;EX.inp=st.inp;EX.count=st.count;EX.diff=st.diff;
   EX.i=0;EX.ok=0;EX.answered=0;EX.skipped=0;EX.spare=[];EX.m=null;EX.done=false;EX.timeUp=false;EX.items=[];EX.pairs=[];EX.note='';EX.short='';EX.saved=false;
-  const src=EX.src,deck=DECKS[src],ti=topicIdx(src),topic=ti>=0?THEORY[S.level][ti]:null;
+  const src=EX.src,deck=getDeck(src),ti=topicIdx(src),topic=ti>=0?THEORY[S.level][ti]:null;
+  const missing=!topic&&!deck&&!['level','words','book'].includes(src);
   let pool=[];
-  if(EX.mode==='fill')pool=topic?topicFill(topic):src==='level'?lvFill():src==='words'?wordsFill():src==='book'?bookFill():deckFill(src);
-  else if(EX.mode==='order')pool=topic?topicOrder(topic):src==='level'?lvOrder():src==='words'?sentOrder(S.words.map(w=>w.ctx).filter(Boolean)):src==='book'?sentOrder(bookSents()):deckOrder(src);
+  if(missing)pool=[];
+  else if(EX.mode==='fill')pool=topic?topicFill(topic):src==='level'?lvFill():src==='words'?wordsFill():src==='book'?bookFill():deckFill(deck);
+  else if(EX.mode==='order')pool=topic?topicOrder(topic):src==='level'?lvOrder():src==='words'?sentOrder(S.words.map(w=>w.ctx).filter(Boolean)):src==='book'?sentOrder(bookSents()):deckOrder(deck);
   else{
     const n={easy:4,mid:6,hard:8}[diff()];
     let all=[];
@@ -2098,6 +2131,7 @@ function exStart(){
     else if(!EX.items.length)EX.note=src==='words'?'Добавьте слова в карточки через читалку или готовые подборки: задания строятся по ним и по предложениям, где вы их встретили.':src==='book'?'Откройте книгу в читалке: задания строятся по предложениям текущей страницы.':'Заданий нет.';
     else if(pool.length<EX.count)EX.short=`В этой категории доступно заданий: ${pool.length} из ${EX.count}.`+((src==='level'||topic)&&SAMPLE?' Добавьте ещё кнопкой «Создать» ниже.':'');
   }
+  if(missing)EX.note='Эта подборка ещё не загрузилась или удалена. Выберите другую категорию в настройках.';
   $('#exNote').textContent=EX.short;
   exRender();renderGen();updExSum();
   const empty=EX.mode==='match'?!EX.pairs.length:!EX.items.length;
@@ -2118,7 +2152,7 @@ function exRender0(){
   if(EX.i>=EX.items.length)return renderSummary(box);
   if(EX.mode==='fill')renderFill(box);else renderOrder(box);
 }
-const catName=()=>EX.src==='level'?S.level:topicIdx(EX.src)>=0?catLabel(EX.src):catLabel(EX.src).toLowerCase();
+const catName=()=>EX.src==='level'?S.level:topicIdx(EX.src)>=0||/^p:/.test(EX.src)?catLabel(EX.src):catLabel(EX.src).toLowerCase();
 function saveTopicRes(ok,n){
   const ti=topicIdx(EX.src);
   if(ti<0||EX.saved||!n)return;
@@ -2154,12 +2188,15 @@ function renderFill(box){
 }
 /* translation of the whole sentence after an answer: built-in → browser translator → Google/Yandex links */
 let TRMAP=null;
+const EXTRA_TR=[]; // [en, ru] from downloaded packs
+function addSentTr(en,ru){EXTRA_TR.push([en,ru]);if(TRMAP&&!TRMAP.has(trKey(en)))TRMAP.set(trKey(en),ru);}
 const trKey=s=>norm(stripP(String(s)));
 function trOf(en){
   if(!TRMAP){
     TRMAP=new Map();
     const add=(e,r)=>{if(e&&r&&!TRMAP.has(trKey(e)))TRMAP.set(trKey(e),r);};
     SENT_TR.forEach(x=>add(x[0],x[1]));
+    EXTRA_TR.forEach(x=>add(x[0],x[1]));
     LEVELS.forEach(l=>{ORDER[l].forEach(x=>add(x.en,x.ru));THEORY[l].forEach(t=>topicBlocks(t,'e').forEach(e=>{add(e[0],e[1]);add(e[0].replace(/\s*\([^)]*\)/g,''),e[1]);}));});
   }
   return TRMAP.get(trKey(en))||'';
@@ -2261,7 +2298,7 @@ function renderMatch(box){
     <div>${m.L.map(x=>`<button class="mt" data-l="${x.i}">${esc(x.t)}</button>`).join('')}</div>
     <div>${m.R.map(x=>`<button class="mt" data-r="${x.i}">${esc(x.t)}</button>`).join('')}</div>
   </div>
-  ${all?`<div class="fb good"><div class="fbh"><span class="fbi" aria-hidden="true">✓</span><b>${m.timeout?'Время вышло. ':''}Ошибок: ${m.miss}</b></div><div class="row">${EX.src==='level'||DECKS[EX.src]?'<button class="btn" id="mAdd">Добавить слова в карточки</button>':''}<button class="btn ghost" id="again">Ещё раз</button>${EX.src==='level'&&S.level!=='C2'?'<button class="btn ghost" id="lvup">Уровень выше</button>':''}${ti>=0?`<button class="btn ghost" data-thopen="${ti}">Открыть тему</button>`:''}</div><div id="mMsg" class="muted"></div></div>`:''}`;
+  ${all?`<div class="fb good"><div class="fbh"><span class="fbi" aria-hidden="true">✓</span><b>${m.timeout?'Время вышло. ':''}Ошибок: ${m.miss}</b></div><div class="row">${EX.src==='level'||getDeck(EX.src)?'<button class="btn" id="mAdd">Добавить слова в карточки</button>':''}<button class="btn ghost" id="again">Ещё раз</button>${EX.src==='level'&&S.level!=='C2'?'<button class="btn ghost" id="lvup">Уровень выше</button>':''}${ti>=0?`<button class="btn ghost" data-thopen="${ti}">Открыть тему</button>`:''}</div><div id="mMsg" class="muted"></div></div>`:''}`;
   paintMatch();
 }
 function paintMatch(fx){
@@ -2396,8 +2433,8 @@ function drawTimerUI(){
 function initExUI(){
   Object.assign(DR,S.exSet);
   const st=DR;
-  const cl=catList(),tIx=cl.map((_,i)=>i).slice(CATS.length);
-  picker($('#pkCat'),'exCat',cl.map(x=>x[1]),Math.max(0,cl.findIndex(x=>x[0]===st.cat)),i=>{st.cat=cl[i][0];markDirty();},[['Основные',[0,1,2]],['Тематические подборки',[3,4,5,6]],['Темы теории '+S.level,tIx]]);
+  const cl=catList(),ix=re=>cl.map((x,i)=>re.test(x[0])?i:-1).filter(i=>i>=0);
+  picker($('#pkCat'),'exCat',cl.map(x=>x[1]),Math.max(0,cl.findIndex(x=>x[0]===st.cat)),i=>{st.cat=cl[i][0];markDirty();},[['Основные',[0,1,2]],['Тематические подборки',[3,4,5,6].concat(ix(/^p:/))],['Темы теории '+S.level,ix(/^t\d+$/)]]);
   picker($('#pkType'),'exType',TYPES.map(x=>x[1]),Math.max(0,TYPES.findIndex(x=>x[0]===st.type)),i=>{st.type=TYPES[i][0];markDirty();});
   picker($('#pkDiff'),'exDiff',DIFFS.map(x=>x[1]),Math.max(0,DIFFS.findIndex(x=>x[0]===st.diff)),i=>{st.diff=DIFFS[i][0];markDirty();});
   picker($('#pkCount'),'exCount',COUNTS.map(String),Math.max(0,COUNTS.indexOf(st.count)),i=>{st.count=COUNTS[i];markDirty();});
@@ -2499,6 +2536,96 @@ $('#vList').addEventListener('click',e=>{
   setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent='Удалить';}},3000);
 });
 
+/* ---------- word packs: generated weekly by GitHub Actions into packs/, cached in DB for offline use ---------- */
+const PACKS=new Map(); // id -> pack {id,title,topic,level,created,provider,items:[{w,tr,pos,ex:[{en,ru}],note}]}
+const PACK_TOPIC={talk:'Разговорное',tech:'Технологии',news:'Новости',build:'Строительство'};
+const PROVIDER_NAME={gigachat:'GigaChat (Сбер)',gemini:'Gemini (Google)'};
+const packIdOk=id=>typeof id==='string'&&/^[A-Za-z0-9_.-]{1,80}$/.test(id);
+// keeps only well-formed items, so a broken file cannot break rendering
+function cleanPack(p){
+  const items=(Array.isArray(p.items)?p.items:[]).filter(x=>x&&typeof x.w==='string'&&x.w.trim()&&typeof x.tr==='string'&&x.tr.trim()).map(x=>({
+    w:x.w.trim(),tr:x.tr.trim(),pos:typeof x.pos==='string'?x.pos:'',
+    ex:(Array.isArray(x.ex)?x.ex:[]).filter(e=>e&&typeof e.en==='string'&&e.en.trim()).slice(0,2).map(e=>({en:e.en.trim(),ru:typeof e.ru==='string'?e.ru.trim():''})),
+    note:typeof x.note==='string'?x.note:''}));
+  return {id:p.id,title:String(p.title||p.id),topic:String(p.topic||''),level:String(p.level||''),created:String(p.created||''),provider:String(p.provider||''),items};
+}
+function addPack(raw){
+  if(!raw||!packIdOk(raw.id))throw new Error('неверный id');
+  const p=cleanPack(raw);
+  if(!p.items.length)throw new Error('нет слов');
+  PACKS.set(p.id,p);
+  p.items.forEach(x=>x.ex.forEach(e=>{if(e.ru)addSentTr(e.en,e.ru);}));
+  return p;
+}
+async function loadStoredPacks(){
+  if(!DB)return;
+  try{
+    const s=await DB.collection('packs').get();
+    s.docs.forEach(d=>{try{addPack(JSON.parse(JSON.stringify(d.data())));}catch(e){console.warn('pack '+d.id+' skipped:',e.message);}});
+  }catch(e){console.warn('packs: stored packs unavailable',e);}
+}
+// new packs from the site's packs/index.json; offline or outside GitHub Pages this quietly does nothing
+async function fetchPacks(){
+  let index=null;
+  try{const r=await fetch('packs/index.json',{cache:'no-cache'});if(!r.ok)return 0;index=await r.json();}catch(e){return 0;}
+  let n=0;
+  for(const m of (index&&Array.isArray(index.packs)?index.packs:[])){
+    if(!m||!packIdOk(m.id)||PACKS.has(m.id))continue;
+    try{
+      const file=typeof m.file==='string'&&/^packs\/[A-Za-z0-9_.-]+\.json$/.test(m.file)?m.file:'packs/'+m.id+'.json';
+      const r=await fetch(file,{cache:'no-cache'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const p=addPack(await r.json());
+      if(DB){try{await DB.doc('packs/'+p.id).set(p);}catch(e){console.warn('pack '+p.id+' not cached:',e);}}
+      n++;
+    }catch(e){console.warn('pack '+m.id+' skipped:',e.message||e);}
+  }
+  return n;
+}
+async function initPacks(){
+  await loadStoredPacks();
+  const before=PACKS.size;
+  if(before)packsChanged();
+  await fetchPacks();
+  if(PACKS.size!==before)packsChanged();
+}
+function packsChanged(){
+  renderPacks();renderMaterials();
+  // refresh the category list unless the person is mid-edit in the settings
+  if(!dirty())initExUI();
+  if(/^p:/.test(S.exSet.cat)&&!EX.items.length&&!EX.pairs.length)exStart();
+}
+const PACK_OPEN=new Set();
+function renderPacks(){
+  const box=$('#packBox');if(!box)return;
+  const list=packList(),seen=new Set(S.packsSeen),have=new Set(S.words.map(w=>w.w));
+  box.hidden=!list.length;
+  const unseen=list.filter(p=>!seen.has(p.id)).length;
+  $('#packCount').textContent=unseen?'('+unseen+')':'';
+  $('#packList').innerHTML=list.map(p=>{
+    const left=p.items.filter(x=>!have.has(norm(x.w))).length,isNew=!seen.has(p.id);
+    return `<li><details class="pk" data-pk="${esc(p.id)}"${PACK_OPEN.has(p.id)?' open':''}><summary><span class="pkh"><b>${esc(p.title)}</b><small>${esc(PACK_TOPIC[p.topic]||p.topic)} · ${esc(p.level)} · слов: ${p.items.length}</small></span>${isNew?'<span class="pknew">новая</span>':''}</summary>
+    <div class="body"><div class="row"><button class="btn" type="button" data-pkall ${left?'':'disabled'}>${left?`Добавить все (${left})`:'Все слова добавлены'}</button>${isNew?'<button class="btn ghost" type="button" data-pkseen>Отметить просмотренным</button>':''}</div>
+    <div class="muted small" data-pkmsg aria-live="polite"></div>
+    <ul class="dlist">${p.items.map((x,i)=>{const h=have.has(norm(x.w)),e=x.ex[0];return `<li><div><b>${esc(x.w)}</b> — ${esc(x.tr)}${e?`<small>${esc(e.en)}</small>`:''}${x.note?`<small class="pknote">${esc(x.note)}</small>`:''}</div><button class="btn ghost" type="button" data-pki="${i}" ${h?'disabled':''}>${h?'В карточках':'Добавить'}</button></li>`;}).join('')}</ul></div></details></li>`;
+  }).join('');
+}
+function packAdd(x){return addWord(x.w,x.tr,(x.ex[0]&&x.ex[0].en)||'');}
+$('#packList').addEventListener('toggle',e=>{const d=e.target.closest&&e.target.closest('[data-pk]');if(d){if(d.open)PACK_OPEN.add(d.dataset.pk);else PACK_OPEN.delete(d.dataset.pk);}},true);
+$('#packList').addEventListener('click',e=>{
+  const d=e.target.closest('[data-pk]');if(!d)return;
+  const p=PACKS.get(d.dataset.pk);if(!p)return;
+  const b=e.target.closest('[data-pki]');
+  if(b){packAdd(p.items[+b.dataset.pki]);afterDeckAdd();return;}
+  if(e.target.closest('[data-pkall]')){
+    let n=0;p.items.forEach(x=>{if(packAdd(x))n++;});
+    afterDeckAdd();
+    const msg=$('#packList [data-pk="'+CSS.escape(p.id)+'"] [data-pkmsg]');if(msg)msg.textContent=n?'Добавлено: '+n+'.':'';
+    return;
+  }
+  if(e.target.closest('[data-pkseen]')){if(!S.packsSeen.includes(p.id))S.packsSeen.push(p.id);save();renderPacks();}
+});
+
 /* ---------- ready-made decks (slider) ---------- */
 let deckIdx=0;
 function renderDeck(){
@@ -2515,7 +2642,7 @@ function initDeckUI(){
   picker($('#pkDeck'),'deckCat',DECK_IDS.map(id=>DECKS[id].label),deckIdx,i=>{deckIdx=i;$('#deckMsg').textContent='';renderDeck();});
   renderDeck();
 }
-function afterDeckAdd(){renderDeck();renderVocab();fcRender();renderHome();}
+function afterDeckAdd(){renderDeck();renderPacks();renderVocab();fcRender();renderHome();}
 $('#deckList').addEventListener('click',e=>{
   const b=e.target.closest('[data-di]');if(!b)return;
   const x=DECKS[DECK_IDS[deckIdx]].items[+b.dataset.di];

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<title>Wordbench pack tests</title>
+<style>body{font:15px system-ui,sans-serif;margin:16px;background:#fff;color:#111}li.ok{color:#16784A}li.bad{color:#B42F2F}</style>
+<h1>Тесты проверки пакетов</h1>
+<p>Те же случаи, что в <code>node --test tools/tests/</code>, кроме тестов с файлами.</p>
+<ul id="out"></ul>
+<p id="sum"></p>
+<script type="module">
+import { cases } from './cases.mjs';
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+for (const [name, fn] of Object.entries(cases)) {
+  const li = document.createElement('li');
+  try { await fn(); li.className = 'ok'; li.textContent = '✓ ' + name; pass++; }
+  catch (e) { li.className = 'bad'; li.textContent = '✗ ' + name + ' — ' + e.message; fail++; }
+  out.append(li);
+}
+document.getElementById('sum').textContent = `Прошло: ${pass}, упало: ${fail}`;
+window.__result = { pass, fail };
+</script>
+</html>

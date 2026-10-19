@@ -1,0 +1,30 @@
+{
+  "levels": ["B1", "B2"],
+  "count": 20,
+  "topics": {
+    "talk": {
+      "label": "Разговорное",
+      "description": "everyday spoken English: small talk, making plans, feelings and reactions, phrasal verbs and idioms used in casual conversation",
+      "levels": ["B1", "B2"],
+      "count": 20
+    },
+    "tech": {
+      "label": "Технологии",
+      "description": "technology in daily life and work: smartphones, apps, the internet, software, AI, online security, gadgets",
+      "levels": ["B1", "B2"],
+      "count": 20
+    },
+    "news": {
+      "label": "Новости",
+      "description": "news and current affairs: politics, economy, society, incidents, reporting verbs and typical headline language",
+      "levels": ["B1", "B2"],
+      "count": 20
+    },
+    "build": {
+      "label": "Строительство",
+      "description": "construction: the building site, structures, foundations, building materials, project documentation, talking to the site manager",
+      "levels": ["B1", "B2"],
+      "count": 20
+    }
+  }
+}
