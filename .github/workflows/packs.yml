@@ -1,0 +1,84 @@
+name: Word packs
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # every Monday 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Тема'
+        type: choice
+        options: [all, talk, tech, news, build]
+        default: all
+      level:
+        description: 'Уровень (auto — чередуется по неделям)'
+        type: choice
+        options: [auto, B1, B2]
+        default: auto
+      count:
+        description: 'Слов в пакете'
+        default: '20'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: word-packs
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LLM_PROVIDER: ${{ secrets.LLM_PROVIDER || 'gigachat' }}
+      GIGACHAT_AUTH_KEY: ${{ secrets.GIGACHAT_AUTH_KEY }}
+      GIGACHAT_MODEL: ${{ vars.GIGACHAT_MODEL || 'GigaChat-2' }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Тесты
+        run: node --test tools/tests/
+
+      # GigaChat uses a certificate from the Russian Trusted Root CA (НУЦ Минцифры),
+      # which is not in the default trust store. Link from developers.sber.ru/docs/ru/gigachat/certificates.
+      - name: Сертификат НУЦ Минцифры (для GigaChat)
+        if: env.LLM_PROVIDER == 'gigachat'
+        env:
+          RU_CA_SHA256: ${{ vars.RU_CA_SHA256 }}
+        run: |
+          curl -sSfLk "https://gu-st.ru/content/lending/russian_trusted_root_ca_pem.crt" -o "$RUNNER_TEMP/russian_trusted_root_ca.pem"
+          # optional pin: set the repository variable RU_CA_SHA256 to the file's sha256 to verify the download
+          if [ -n "$RU_CA_SHA256" ]; then
+            echo "$RU_CA_SHA256  $RUNNER_TEMP/russian_trusted_root_ca.pem" | sha256sum -c -
+          fi
+          openssl x509 -in "$RUNNER_TEMP/russian_trusted_root_ca.pem" -noout -subject -fingerprint -sha256
+          echo "NODE_EXTRA_CA_CERTS=$RUNNER_TEMP/russian_trusted_root_ca.pem" >> "$GITHUB_ENV"
+
+      - name: Генерация подборок
+        id: gen
+        env:
+          IN_TOPIC: ${{ inputs.topic || 'all' }}
+          IN_LEVEL: ${{ inputs.level || 'auto' }}
+          IN_COUNT: ${{ inputs.count || '20' }}
+        run: node tools/generate-pack.mjs --topic "$IN_TOPIC" --level "$IN_LEVEL" --count "$IN_COUNT"
+
+      # commit whatever was created, even if some topics failed
+      - name: Коммит новых подборок
+        if: always() && steps.gen.outcome != 'skipped'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packs tools/known-words.json
+          if git diff --cached --quiet; then
+            echo "Новых подборок нет"
+          else
+            git commit -m "Новые подборки слов $(date -u +%F)"
+            git push
+          fi
