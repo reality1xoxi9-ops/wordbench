@@ -296,6 +296,34 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
 .sh-top button{background:none;border:0;color:var(--muted);cursor:pointer;text-decoration:underline;min-height:40px}
 #wBody{min-height:3.2em;margin:6px 0}
 #wBody .tr{font-size:1.25rem;font-weight:600}
+#wBody .src{font-size:.8rem;color:var(--muted)}
+.shctx{margin:4px 0 8px}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:.875rem;border-radius:999px}
+#wSentTr{margin:0 0 8px;padding:8px 12px;border-radius:10px;background:var(--bg);font-size:.95rem}
+#wSentTr .en{display:block;font-family:var(--f-read);color:var(--muted);margin-bottom:4px}
+
+/* page translation overlay */
+.trov{position:fixed;inset:0;z-index:30;background:rgba(10,16,30,.45);display:flex;align-items:flex-start;justify-content:center;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 12px max(12px,env(safe-area-inset-left,0px))}
+.trov-in{background:var(--surface);border:1px solid var(--line);border-radius:14px;width:100%;max-width:720px;max-height:100%;overflow:auto;padding:14px 16px;box-shadow:0 10px 30px rgba(10,16,30,.25)}
+.trov .sh-top b{font-family:var(--f-ui);font-size:1.1rem}
+.ovsrc{font-family:var(--f-read);font-size:1.1rem;line-height:1.7;padding:10px 12px;border-left:3px solid var(--mark);background:var(--bg);border-radius:0 10px 10px 0;margin:8px 0}
+.ovsrc mark{background:var(--mark);color:var(--mark-ink);border-radius:3px;padding:0 2px}
+.ovtr{margin:12px 0}
+.ovtr p{font-size:1.05rem;line-height:1.65;margin:4px 0 0}
+.ovall p.hl{background:color-mix(in srgb,var(--mark) 35%,transparent);border-radius:6px;padding:2px 6px}
+body.ov-open{overflow:hidden}
+
+/* full-screen reading: only the text, the pager and a slim top bar */
+.fsbtn{padding:6px 12px;min-height:40px;font-size:.9rem}
+body.focus .brand,body.focus .nav,body.focus #v-reader>h1,body.focus #v-reader>.row,body.focus #pasteBox,body.focus #libBox,body.focus #rNote,body.focus #rTabs,body.focus .rtr{display:none!important}
+body.focus{padding-top:0}
+body.focus .reader{grid-template-columns:minmax(0,1fr)!important}
+body.focus .reader[data-pane] .rtext{display:block}
+body.focus .rtext{font-size:1.25rem;line-height:1.85;max-width:40em;margin:0 auto}
+body.focus .rtop{position:sticky;top:0;z-index:5;background:var(--bg);margin:0;padding:6px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap}
+body.focus .rtop .t{display:none}
+body.focus .rtop .btn{min-height:36px;padding:4px 10px;font-size:.875rem}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:0}}}
 </style>
 
@@ -395,7 +423,7 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
       </div>
       <p class="muted" id="rNote">Форматы: .txt и .epub. Нажмите на любое слово, чтобы увидеть перевод.</p>
       <div id="rWrap">
-        <div class="rbar"><div class="t" id="rTitle"></div><div class="pg" data-pgbar></div></div>
+        <div class="rbar rtop"><div class="t" id="rTitle"></div><button class="btn ghost fsbtn" id="rFull" type="button" aria-pressed="false">⛶ Во весь экран</button><div class="pg" data-pgbar></div></div>
         <div class="seg" id="rTabs" role="group" aria-label="Панель">
           <button data-pane="text" aria-pressed="true">Текст</button>
           <button data-pane="tr" aria-pressed="false">Перевод</button>
@@ -422,6 +450,7 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
                 <h3>Через документы Google или Яндекса</h3>
                 <ol class="steps">
                   <li>Скачайте книгу в .docx (файлов может быть несколько).
+                    <label class="chk"><input type="checkbox" id="glossOn" checked><span>Добавить в файл список слов книги: переводчик переведёт и их, и при чтении каждое слово будет переводиться сразу, без интернета.</span></label>
                     <div class="row" id="expParts"></div></li>
                   <li>Переведите файл на русский и скачайте результат:
                     <a href="https://translate.google.com/?sl=en&amp;tl=ru&amp;op=docs" target="_blank" rel="noopener">Google Переводчик, документы</a>
@@ -432,8 +461,15 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
                       <input type="file" id="trFile" multiple accept=".docx,.txt,.md,.epub" hidden>
                     </div></li>
                 </ol>
+                <p class="muted small" id="glossInfo"></p>
                 <h3>Вставить перевод текущей страницы</h3>
-                <textarea id="pasteTr" placeholder="Скопируйте перевод страницы из Google или Яндекса и вставьте сюда"></textarea>
+                <ol class="steps">
+                  <li>Скопируйте страницу вместе со списком её слов и вставьте в Google или Яндекс Переводчик.
+                    <div class="row"><button class="btn ghost" id="cpPage" type="button">Скопировать страницу со словами</button><a class="btn ghost" href="https://translate.google.com/?sl=en&amp;tl=ru&amp;op=translate" target="_blank" rel="noopener">Google</a><a class="btn ghost" href="https://translate.yandex.ru/?source_lang=en&amp;target_lang=ru" target="_blank" rel="noopener">Яндекс</a></div>
+                    <p class="muted small" id="cpMsg" aria-live="polite"></p></li>
+                  <li>Скопируйте весь перевод и вставьте сюда. Перевод страницы и перевод слов сохранятся отдельно.</li>
+                </ol>
+                <textarea id="pasteTr" placeholder="Вставьте сюда перевод страницы (со списком слов или без)"></textarea>
                 <div class="row"><button class="btn" id="pasteTrSave" type="button">Сохранить перевод страницы</button></div>
                 <label class="chk" id="useClaudeRow" hidden><input type="checkbox" id="useClaude"><span>Дополнительно переводить через Claude. Это расходует лимит Claude, по умолчанию выключено.</span></label>
               </div>
@@ -486,6 +522,11 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
   <div class="sheet-in">
     <div class="sh-top"><b id="wTitle"></b><button id="wClose" type="button">Закрыть</button></div>
     <div id="wBody"></div>
+    <div class="row shctx">
+      <button class="btn ghost sm" id="wSent" type="button">Перевод предложения</button>
+      <button class="btn ghost sm" id="wPage" type="button">Перевод страницы</button>
+    </div>
+    <div id="wSentTr" hidden></div>
     <div class="row">
       <input id="wTr" type="text" placeholder="Перевод для словаря" autocomplete="off">
       <button class="btn" id="wAdd" type="button">В словарь</button>
@@ -496,6 +537,14 @@ h3{font-size:1.02rem;font-weight:600;margin:18px 0 6px}
       <a class="btn ghost" id="wY" target="_blank" rel="noopener">Яндекс</a>
       <a class="btn ghost" id="wR" target="_blank" rel="noopener">Reverso</a>
     </div>
+  </div>
+</div>
+
+<!-- page translation over the text: the reading position underneath does not move -->
+<div class="trov" id="trOv" hidden role="dialog" aria-label="Перевод страницы">
+  <div class="trov-in">
+    <div class="sh-top"><b>Перевод страницы</b><button id="trOvClose" type="button">Закрыть</button></div>
+    <div id="trOvBody"></div>
   </div>
 </div>
 
@@ -1759,6 +1808,8 @@ const VIEWS=['home','theory','ex','reader','vocab','methods','mat'];
 function show(v){
   VIEWS.forEach(x=>{$('#v-'+x).hidden=x!==v;$('[data-nav="'+x+'"]').setAttribute('aria-current',x===v?'page':'false');});
   closeSheet();
+  if(v!=='reader'&&document.body.classList.contains('focus'))setFocus(false);
+  if(!$('#trOv').hidden)closePageTr();
   if(v==='home')renderHome();
   if(v==='vocab'){fcRender();renderVocab();renderDeck();renderPacks();}
   if(v!=='ex')stopTimer();
@@ -2663,7 +2714,74 @@ const TRP={};
 let lookTok=0,trTok=0,cur=null,bookStop=false,bookBusy=false,lookCtl=null;
 const hash=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36);};
 const setProg=t=>{$('#trProg').textContent=t;};
-const updCount=()=>{$('#trCount').textContent=R.pages.length?`Переведено страниц: ${Object.keys(TRP).length} из ${R.pages.length}`:'';};
+const updCount=()=>{$('#trCount').textContent=R.pages.length?`Переведено страниц: ${Object.keys(TRP).length} из ${R.pages.length}`:'';updGlossInfo();};
+
+/* ----- book glossary: per-word translations that come back together with a manual translation -----
+   Exported text ends with a marker and numbered word lines "[[17]] house"; translators keep the numbers
+   ("[[17]] дом"), so on import the numbers map translations back to the book's word list. */
+const GLOSS=new Map(); // word (lowercase, as in the book) -> Russian
+const GLOSS_MARK='@@@ WB-WORDS @@@';
+const WORD_RE=/[A-Za-zÀ-ɏ]+(?:['’][A-Za-zÀ-ɏ]+)*/g;
+const wkey=w=>String(w).toLowerCase().replace(/’/g,"'");
+// unique words of the book in order of first appearance; the index is the number used in "[[n]]"
+function bookWords(){
+  if(R.wordsKey===R.key&&R.words)return R.words;
+  const seen=new Set(),list=[];
+  R.paras.forEach((p,pi)=>{(p.match(WORD_RE)||[]).forEach(w=>{const k=wkey(w);if(k.length>1&&!seen.has(k)){seen.add(k);list.push({k,pi});}});});
+  R.words=list;R.wordsKey=R.key;
+  return list;
+}
+const glossLine=(i,k)=>`[[${i}]] ${k}`;
+// numbered lines for words first seen in paragraphs [a, b) that have no translation yet
+function glossLines(a,b){
+  const out=[];
+  bookWords().forEach((x,i)=>{if(x.pi>=a&&x.pi<b&&!GLOSS.has(x.k))out.push(glossLine(i,x.k));});
+  return out;
+}
+// split translated text into the page translation and "[[n]] перевод" pairs
+function parseTranslated(paras){
+  const body=[],pairs=[];
+  paras.forEach(p=>{
+    const rest=[];
+    p.split(/\n/).forEach(l=>{
+      if(/@@@\s*WB/i.test(l))return; // the marker line, even if a translator renamed "WORDS"
+      const m=l.match(/^\s*\[\[\s*(\d+)\s*\]\]\s*[:\-–—.]?\s*(.+?)\s*$/);
+      if(m)pairs.push([+m[1],m[2]]);else rest.push(l);
+    });
+    const t=rest.join('\n').trim();if(t)body.push(t);
+  });
+  return {body,pairs};
+}
+function applyGloss(pairs){
+  const words=bookWords();let n=0;
+  pairs.forEach(([i,ru])=>{
+    const x=words[i];ru=String(ru).replace(/^[\s"«“]+|[\s"»”.;,]+$/g,'');
+    if(x&&ru&&/[а-яё]/i.test(ru)){GLOSS.set(x.k,ru);n++;}
+  });
+  if(n)persistGloss();
+  updGlossInfo();
+  return n;
+}
+async function persistGloss(){
+  const key=R.key;if(!DB||!key)return;
+  const all=[...GLOSS.entries()],CH_N=1500;
+  try{for(let c=0;c*CH_N<all.length;c++)await DB.doc('books/'+key+'/gloss/c'+c).set({p:all.slice(c*CH_N,(c+1)*CH_N)});}catch(e){console.warn('gloss not saved',e);}
+}
+async function loadGloss(){
+  const key=R.key;if(!DB||!key)return;
+  try{
+    const s=await DB.collection('books/'+key+'/gloss').get();
+    if(key!==R.key)return;
+    s.docs.forEach(d=>{const p=(d.data()||{}).p;if(Array.isArray(p))p.forEach(x=>{if(Array.isArray(x)&&x[0]&&x[1])GLOSS.set(x[0],x[1]);});});
+    updGlossInfo();
+  }catch(e){}
+}
+// translation of a tapped word from the book glossary
+function glossOf(word){const k=wkey(word);return GLOSS.get(k)||GLOSS.get(k.replace(/'s$/,''))||'';}
+function updGlossInfo(){
+  const el=$('#glossInfo');if(!el)return;
+  el.textContent=R.pages.length&&GLOSS.size?`Словарик книги: переведено слов ${GLOSS.size} из ${bookWords().length}. Эти слова переводятся по нажатию сразу, без интернета.`:'';
+}
 
 function splitParas(text){
   text=text.replace(/\r/g,'');
@@ -2766,6 +2884,7 @@ async function loadTranslations(){
     s.docs.forEach(d=>{const t=(d.data()||{}).t;if(t)TRP[+d.id.slice(1)]=t;});
     renderTrPanel();
   }catch(e){}
+  loadGloss();
 }
 async function refreshLib(){
   if(!DB)return;
@@ -2794,6 +2913,8 @@ async function deleteBook(id){
     const pg=await DB.collection('books/'+id+'/pages').limit(1000).get();
     for(const d of pg.docs)await DB.doc('books/'+id+'/pages/'+d.id).delete();
     for(let k=0;k<n;k++)await DB.doc('books/'+id+'/text/c'+k).delete();
+    const gl=await DB.collection('books/'+id+'/gloss').get();
+    for(const d of gl.docs)await DB.doc('books/'+id+'/gloss/'+d.id).delete();
     await meta.delete();
     $('#rNote').textContent='Книга удалена из библиотеки.';
   }catch(e){$('#rNote').textContent='Не удалось удалить книгу полностью.';}
@@ -2812,8 +2933,9 @@ function loadBook(title,text,opts){
   opts=opts||{};
   const paras=splitParas(text),pages=buildPages(paras);
   if(!pages.length){$('#rNote').textContent='В файле не нашлось текста.';return;}
-  R.title=title;R.paras=paras;R.pages=pages;R.key=hash(title+':'+text.length);
+  R.title=title;R.paras=paras;R.pages=pages;R.key=hash(title+':'+text.length);R.words=null;
   Object.keys(TRP).forEach(k=>delete TRP[k]);
+  GLOSS.clear();
   R.page=Math.min(S.pos[R.key]||0,pages.length-1);
   trTok++;lookTok++;
   closeSheet();
@@ -2983,8 +3105,13 @@ $('#trFile').addEventListener('change',async e=>{
       else if(/\.epub$/i.test(f.name))all=all.concat(splitParas(await epubToText(f)));
       else all=all.concat(splitParas(await f.text()));
     }
-    if(!all.length){setProg('В файлах не нашлось текста.');}
-    else await applyTranslation(all);
+    const {body,pairs}=parseTranslated(all);
+    if(!body.length&&!pairs.length){setProg('В файлах не нашлось текста.');}
+    else{
+      if(body.length)await applyTranslation(body);
+      const g=pairs.length?applyGloss(pairs):0;
+      if(g)setProg($('#trProg').textContent+` Переведено слов для словарика книги: ${g}.`);
+    }
   }catch(err){setProg('Не удалось прочитать перевод. Проверьте, что это файлы .docx, .txt или .epub.');}
   e.target.value='';
 });
@@ -2992,17 +3119,36 @@ $('#expParts').addEventListener('click',async e=>{
   const b=e.target.closest('[data-part]');if(!b)return;
   const parts=exportParts(),k=+b.dataset.part;
   try{
-    const blob=await buildDocx(parts[k]);
+    // paragraph range of this part, so its word list holds the words that first appear in it
+    let a=0;for(let j=0;j<k;j++)a+=parts[j].length;
+    const words=$('#glossOn').checked?glossLines(a,a+parts[k].length):[];
+    const blob=await buildDocx(words.length?parts[k].concat([GLOSS_MARK],words):parts[k]);
     const slug=(R.title.replace(/[^\p{L}\p{N}]+/gu,'_').replace(/^_|_$/g,'')||'book').slice(0,40);
     if(!await saveFile(`${slug}_part${String(k+1).padStart(2,'0')}.docx`,blob)){setProg('Скачивание отменено.');return;}
     setProg('Файл сохранён. Переведите его в Google или Яндексе и загрузите обратно ниже.');
   }catch(err){if(!err||err.code!=='declined')setProg('Не удалось сохранить файл.');}
 });
 $('#pasteTrSave').addEventListener('click',()=>{
-  const t=$('#pasteTr').value.trim();if(!t)return;
-  const n=R.page;
-  TRP[n]=t;persistPage(R.key,n,t);drawTr(t);updCount();
-  $('#pasteTr').value='';switchPaneTr();
+  const raw=$('#pasteTr').value.trim();if(!raw)return;
+  const n=R.page,{body,pairs}=parseTranslated(raw.replace(/\r/g,'').split(/\n\s*\n/));
+  const t=body.join('\n\n'),g=pairs.length?applyGloss(pairs):0;
+  if(t){TRP[n]=t;persistPage(R.key,n,t);drawTr(t);}
+  updCount();
+  $('#pasteTr').value='';
+  $('#cpMsg').textContent=(t?'Перевод страницы сохранён.':'')+(g?` Переведено слов: ${g}.`:'');
+  if(t)switchPaneTr();
+});
+// page text + numbered words of this page, for pasting into Google or Yandex Translate
+$('#cpPage').addEventListener('click',async()=>{
+  const paras=R.pages[R.page];
+  // the page's own words not yet translated (not only those first seen on this page)
+  const words=bookWords(),onPage=new Set();
+  paras.forEach(p=>(p.match(WORD_RE)||[]).forEach(w=>onPage.add(wkey(w))));
+  const lines=[];words.forEach((x,i)=>{if(onPage.has(x.k)&&!GLOSS.has(x.k))lines.push(glossLine(i,x.k));});
+  const text=paras.join('\n\n')+(lines.length?'\n\n'+GLOSS_MARK+'\n'+lines.join('\n'):'');
+  const warn=text.length>5000?` Текст длиннее 5000 знаков (${text.length}): Google Переводчик переведёт только начало, лучше Яндекс или перевод документом.`:'';
+  try{await navigator.clipboard.writeText(text);$('#cpMsg').textContent=`Скопировано: страница и слов ${lines.length}.`+warn;}
+  catch(e){const ta=$('#pasteTr');ta.value=text;ta.focus();ta.select();$('#cpMsg').textContent='Скопировать автоматически не получилось: текст выделен в поле ниже, скопируйте его вручную, затем замените переводом.'+warn;}
 });
 
 /* ----- page / book translation ----- */
@@ -3092,10 +3238,12 @@ $('#wClose').addEventListener('click',closeSheet);
 $('#rText').addEventListener('click',e=>{
   const el=e.target.closest('.w');if(!el)return;
   $$('.w.sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
-  const par=R.pages[R.page][+el.parentNode.dataset.p],ctx=sentenceAt(par,+el.dataset.i),word=el.textContent;
-  cur={w:word,ctx,base:null};
+  const pi=+el.parentNode.dataset.p,wi=+el.dataset.i;
+  const par=R.pages[R.page][pi],ctx=sentenceAt(par,wi),word=el.textContent;
+  cur={w:word,ctx,base:null,pi,wi};
   $('#wTitle').textContent=word;
   $('#wTr').value='';
+  $('#wSentTr').hidden=true;$('#wSentTr').innerHTML='';
   const q=encodeURIComponent(word.toLowerCase());
   $('#wG').href='https://translate.google.com/?sl=en&tl=ru&op=translate&text='+q;
   $('#wY').href='https://translate.yandex.ru/?source_lang=en&target_lang=ru&text='+q;
@@ -3106,6 +3254,14 @@ $('#rText').addEventListener('click',e=>{
 async function lookup(word,ctx){
   const box=$('#wBody'),tok=++lookTok;
   if(lookCtl)lookCtl.abort();
+  // the book glossary (from a manual translation) answers instantly and offline
+  const g=glossOf(word);
+  if(g){
+    cur.base=wkey(word);
+    box.innerHTML=`<p class="tr" style="margin:0">${esc(g)}</p><p class="src" style="margin:2px 0 0">из вашего перевода книги</p>`;
+    $('#wTr').value=g;
+    return;
+  }
   if(CH.ok){
     box.innerHTML='<p class="muted">Перевожу…</p>';
     try{
@@ -3145,6 +3301,85 @@ $('#wAdd').addEventListener('click',()=>{
   renderPage();
   $$('#rText .w').forEach(x=>{if(x.textContent===cur.w&&+x.dataset.i===idx&&+x.parentNode.dataset.p===pi)x.classList.add('sel');});
 });
+/* ----- sentence and page translation from the word card ----- */
+const trLinks=text=>{const q=encodeURIComponent(text.slice(0,1800));return `<a href="https://translate.google.com/?sl=en&amp;tl=ru&amp;op=translate&amp;text=${q}" target="_blank" rel="noopener">Google</a> · <a href="https://translate.yandex.ru/?source_lang=en&amp;target_lang=ru&amp;text=${q}" target="_blank" rel="noopener">Яндекс</a>`;};
+// translated paragraph matching paragraph pi of the page: exact if paragraph counts match, otherwise proportional
+function pageTrParas(n){
+  const t=TRP[n];if(!t)return null;
+  const tp=t.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean),N=R.pages[n].length;
+  return {tp,exact:tp.length===N,at:pi=>tp.length===N?pi:Math.min(tp.length-1,Math.round(pi*tp.length/N))};
+}
+$('#wSent').addEventListener('click',async()=>{
+  if(!cur)return;
+  const box=$('#wSentTr'),tok=lookTok;box.hidden=false;
+  const head=`<span class="en">${esc(cur.ctx)}</span>`;
+  if(CH.ok){
+    box.innerHTML=head+'<span class="muted">Перевожу…</span>';
+    try{const r=await chTr(cur.ctx);if(tok===lookTok)box.innerHTML=head+esc(r);return;}catch(e){chFail();}
+  }
+  const pt=pageTrParas(R.page);
+  box.innerHTML=head+(pt?`<span class="muted small">Перевод абзаца${pt.exact?'':' (примерно)'}:</span> ${esc(pt.tp[pt.at(cur.pi)]||'')}<br>`:'')+`<span class="muted small">Перевести предложение:</span> ${trLinks(cur.ctx)}`;
+});
+$('#wPage').addEventListener('click',()=>openPageTr());
+function markWord(p,c){
+  if(!c||c.wi==null||p.slice(c.wi,c.wi+c.w.length)!==c.w)return esc(p);
+  return esc(p.slice(0,c.wi))+'<mark>'+esc(c.w)+'</mark>'+esc(p.slice(c.wi+c.w.length));
+}
+function renderPageTr(){
+  const n=R.page,paras=R.pages[n],pi=cur&&cur.pi!=null?cur.pi:0,src=paras[pi]||'';
+  const pt=pageTrParas(n);
+  let html=`<div class="meta">Ваш абзац</div><div class="ovsrc">${markWord(src,cur)}</div>`;
+  if(pt){
+    const ti=pt.at(pi);
+    html+=`<div class="ovtr"><div class="meta">Перевод абзаца${pt.exact?'':' · примерно: абзацы перевода не совпали с оригиналом'}</div><p>${esc(pt.tp[ti]||'')}</p></div>
+    <details class="ovall"><summary>Вся страница</summary>${pt.tp.map((x,i)=>`<p${i===ti?' class="hl"':''}>${esc(x)}</p>`).join('')}</details>`;
+  }else if(CH.ok){
+    html+='<p class="muted">Перевожу страницу встроенным переводчиком…</p>';
+  }else{
+    html+=`<p class="muted">Перевода этой страницы пока нет. Откройте абзац или страницу в переводчике, а готовый перевод можно сохранить: «Перевод всей книги» → «Вставить перевод текущей страницы».</p>
+    <p>Абзац: ${trLinks(src)}</p><p>Страница: ${trLinks(paras.join('\n\n'))}</p>`;
+  }
+  $('#trOvBody').innerHTML=html;
+}
+async function translatePageNow(){
+  const n=R.page,key=R.key,paras=R.pages[n];
+  try{
+    const out=[];for(const p of paras)out.push(await chTrLong(p));
+    const t=out.join('\n\n');
+    TRP[n]=t;persistPage(key,n,t);updCount();
+    if(R.page===n&&key===R.key){drawTr(t);if(!$('#trOv').hidden)renderPageTr();}
+  }catch(e){chFail();if(!$('#trOv').hidden)renderPageTr();}
+}
+function openPageTr(){
+  $('#trOv').hidden=false;document.body.classList.add('ov-open');
+  renderPageTr();
+  try{$('#trOvClose').focus({preventScroll:true});}catch(e){}
+  if(!TRP[R.page]&&CH.ok)translatePageNow();
+}
+function closePageTr(){$('#trOv').hidden=true;document.body.classList.remove('ov-open');}
+$('#trOvClose').addEventListener('click',closePageTr);
+$('#trOv').addEventListener('click',e=>{if(e.target.id==='trOv')closePageTr();});
+
+/* ----- full-screen reading: real fullscreen where the browser allows it (not iPhone Safari), CSS mode everywhere ----- */
+function setFocus(on){
+  document.body.classList.toggle('focus',on);
+  const b=$('#rFull');b.setAttribute('aria-pressed',String(on));b.textContent=on?'✕ Выйти':'⛶ Во весь экран';
+  try{
+    if(on&&document.documentElement.requestFullscreen&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});
+    if(!on&&document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+  try{$('#rWrap').scrollIntoView({block:'start'});}catch(e){}
+}
+$('#rFull').addEventListener('click',()=>setFocus(!document.body.classList.contains('focus')));
+// leaving browser fullscreen (Esc, back gesture) also leaves the reading mode
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('focus'))setFocus(false);});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(!$('#trOv').hidden)closePageTr();
+  else if(!$('#sheet').hidden)closeSheet();
+  else if(document.body.classList.contains('focus'))setFocus(false);
+});
+
 $('#wSay').addEventListener('click',()=>{
   try{const u=new SpeechSynthesisUtterance(cur?cur.w:'');u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}
 });
