@@ -1,6 +1,6 @@
 // Test cases shared by the Node tests (node --test tools/tests/*.test.mjs) and the browser page tools/tests/browser.html.
-import { validateItems, wordInSentence, checkItem } from '../validate.mjs';
-import { extractJSON, addToIndex, collectItems, packTitle, levelFor } from '../pack-core.mjs';
+import { validateItems, wordInSentence, checkItem, cleanWord } from '../validate.mjs';
+import { extractJSON, addToIndex, collectItems, packTitle, levelFor, buildPrompt } from '../pack-core.mjs';
 
 const eq = (a, b, msg) => { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(`${msg}: ${JSON.stringify(a)} != ${JSON.stringify(b)}`); };
 const ok = (v, msg) => { if (!v) throw new Error(msg); };
@@ -84,7 +84,7 @@ export const cases = {
   },
   async 'мало слов после повторов — ошибка'() {
     const r = await collectItems({ generate: async () => '{"items":[]}', n: 20, description: 'x', level: 'B1', known: [] });
-    eq(r.attempts, 6, 'attempts (2 batches x 3 tries)');
+    eq(r.attempts, 8, 'attempts (2 batches x 4 tries)');
     ok(r.error, 'error');
   },
   // the failures seen with GigaChat-2 Lite on 2026-10-19
@@ -116,6 +116,35 @@ export const cases = {
     ok(r.item, 'passes: ' + r.reason);
     eq(r.item.tr, 'заливать бетон; бетонировать', 'tr');
     eq(r.item.ex[1].ru, 'Рабочие залили бетон для фундамента.', 'string example');
+  },
+  // the failures seen on 2026-10-20: words with a translation or note inside "w"
+  'из поля слова убираются перевод и пояснения'() {
+    eq(cleanWord('reinforced concrete — железобетон'), 'reinforced concrete', 'dash');
+    eq(cleanWord('plaster (n.)'), 'plaster', 'brackets');
+    eq(cleanWord('to tile: класть плитку'), 'to tile', 'colon');
+    eq(cleanWord('"grout".'), 'grout', 'quotes, dot');
+    eq(cleanWord('load-bearing wall'), 'load-bearing wall', 'hyphen kept');
+    eq(cleanWord('штукатурка'), 'штукатурка', 'no Latin part: unchanged');
+    const r = checkItem(good('pour concrete — заливать бетон'), new Set());
+    ok(r.item && r.item.w === 'pour concrete', 'item passes after cleaning');
+  },
+  'журнал показывает примеры отбракованных слов'() {
+    const r = validateItems([good(), good('бетон'), good('scaffolding', { pos: 'n' })], ['pour concrete']);
+    eq(r.samples['уже известно'], ['pour concrete'], 'known');
+    eq(r.samples['в слове не только латиница'], ['бетон'], 'latin');
+  },
+  'промпт: подтема вместо длинного списка известных слов'() {
+    const p = buildPrompt({ n: 12, description: 'construction', focus: 'roofing and waterproofing', level: 'B2', knownSample: [] });
+    ok(p.includes('roofing and waterproofing'), 'focus');
+    ok(!p.includes('already known') && !p.includes('Already chosen'), 'no list when nothing chosen yet');
+    ok(buildPrompt({ n: 5, description: 'x', level: 'B1', knownSample: ['grout'] }).includes('Already chosen, do not repeat: grout'), 'chosen words listed');
+  },
+  async 'запросы идут по разным подтемам'() {
+    const seen = [];
+    await collectItems({ generate: async p => { seen.push((p.match(/narrow area: ([^.]+)\./) || [])[1]); return '{"items":[]}'; },
+      n: 10, description: 'x', subtopics: ['a', 'b', 'c'], level: 'B1', known: [] });
+    eq(seen.length, 4, 'requests');
+    eq(new Set(seen).size, 3, 'all subtopics used');
   },
   async 'схема передаётся провайдеру'() {
     let got = null;
