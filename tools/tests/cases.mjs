@@ -1,4 +1,4 @@
-// Test cases shared by the Node tests (node --test tools/tests/) and the browser page tools/tests/browser.html.
+// Test cases shared by the Node tests (node --test tools/tests/*.test.mjs) and the browser page tools/tests/browser.html.
 import { validateItems, wordInSentence, checkItem } from '../validate.mjs';
 import { extractJSON, addToIndex, collectItems, packTitle, levelFor } from '../pack-core.mjs';
 
@@ -84,7 +84,42 @@ export const cases = {
   },
   async 'мало слов после повторов — ошибка'() {
     const r = await collectItems({ generate: async () => '{"items":[]}', n: 20, description: 'x', level: 'B1', known: [] });
-    eq(r.attempts, 3, 'attempts');
+    eq(r.attempts, 6, 'attempts (2 batches x 3 tries)');
     ok(r.error, 'error');
+  },
+  // the failures seen with GigaChat-2 Lite on 2026-10-19
+  'текст после JSON не мешает'() {
+    const t = JSON.stringify({ items: [good()] }) + '\nНадеюсь, это поможет! {"tip": 1}';
+    const d = extractJSON(t);
+    eq(d.items.length, 1, 'items');ok(!d.salvaged, 'parsed whole');
+  },
+  'лишние запятые исправляются'() {
+    const t = '{"items":[{"w":"pour concrete","tr":"заливать бетон","pos":"phr","ex":[{"en":"They will pour concrete into the formwork on Monday.","ru":"Зальют бетон.",},],},],}';
+    eq(extractJSON(t).items.length, 1, 'items');
+  },
+  'из оборванного ответа извлекаются целые слова'() {
+    const a = JSON.stringify(good()), b = JSON.stringify(good('scaffolding', { pos: 'n' }));
+    const t = '{"items":[' + a + ',' + b + ',{"w":"cut off here","tr":"обры';
+    const d = extractJSON(t);
+    ok(d.salvaged, 'salvaged');
+    eq(d.items.map(x => x.w), ['pour concrete', 'scaffolding'], 'items');
+  },
+  'из ответа с битым синтаксисом спасаются годные слова'() {
+    const t = '{"items":[' + JSON.stringify(good()) + ', {"w": "broken" "tr": "сломано"}, ' + JSON.stringify(good('pour', { pos: 'v' })) + ']}';
+    eq(extractJSON(t).items.map(x => x.w), ['pour concrete', 'pour'], 'items');
+  },
+  'другие названия полей понимаются'() {
+    const raw = { word: 'pour concrete', translation: ['заливать бетон', 'бетонировать'], part_of_speech: 'phr',
+      examples: [{ english: 'They will pour concrete into the formwork on Monday.', russian: 'В понедельник зальют бетон.' },
+                 'The workers poured concrete for the foundation. — Рабочие залили бетон для фундамента.'] };
+    const r = checkItem(raw, new Set());
+    ok(r.item, 'passes: ' + r.reason);
+    eq(r.item.tr, 'заливать бетон; бетонировать', 'tr');
+    eq(r.item.ex[1].ru, 'Рабочие залили бетон для фундамента.', 'string example');
+  },
+  async 'схема передаётся провайдеру'() {
+    let got = null;
+    await collectItems({ generate: async (p, o) => { got = o; return JSON.stringify({ items: [good()] }); }, n: 1, description: 'x', level: 'B1', known: [] });
+    ok(got && got.schema && got.schema.required.includes('items'), 'schema');
   }
 };
