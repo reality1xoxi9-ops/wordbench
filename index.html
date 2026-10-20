@@ -3305,43 +3305,79 @@ $('#wAdd').addEventListener('click',()=>{
 });
 /* ----- sentence and page translation from the word card ----- */
 const trLinks=text=>{const q=encodeURIComponent(text.slice(0,1800));return `<a href="https://translate.google.com/?sl=en&amp;tl=ru&amp;op=translate&amp;text=${q}" target="_blank" rel="noopener">Google</a> · <a href="https://translate.yandex.ru/?source_lang=en&amp;target_lang=ru&amp;text=${q}" target="_blank" rel="noopener">Яндекс</a>`;};
-/* Paragraph alignment by length (Gale–Church style dynamic programming). A translation often has extra or
-   missing paragraphs (a book title, "ПРЕДИСЛОВИЕ"), so a plain proportional index drifts; here such paragraphs
-   become cheap insertions/deletions and the long paragraphs still pair up by size.
-   Returns, for every original paragraph, the list of translated paragraph indices. */
-function alignParas(en,ru){
-  const N=en.length,M=ru.length,le=en.map(s=>s.length),lr=ru.map(s=>s.length);
-  const sum=a=>a.reduce((x,y)=>x+y,0),c=sum(lr)/Math.max(1,sum(le))||1.1;
-  // 0 for a perfect size match, up to ~10 for a bad one
-  const fit=(a,b)=>Math.abs(b-c*a)/(c*a+b+20)*10;
+/* ----- matching the original with its translation (paragraphs, then sentences) -----
+   Dynamic programming in the style of Gale–Church: units pair 1-1, 2-1, 1-2, or stay unmatched (an extra title,
+   an author line). A pair is scored by length, by cues that survive translation (numbers, ?, !, quotes) and by
+   anchor words: translations of the English words that are known from the book glossary or the user's cards. */
+const ruToks=t=>t.toLowerCase().replace(/ё/g,'е').match(/[а-я]+/g)||[];
+let UDICT=null,UDICT_N=-1;
+const userDict=()=>{if(UDICT_N!==S.words.length){UDICT=new Map(S.words.map(w=>[w.w,w.tr]));UDICT_N=S.words.length;}return UDICT;};
+const ANCH=new Map();
+// Russian stems expected in the translation of an English text
+function enAnchors(t){
+  if(ANCH.has(t))return ANCH.get(t);
+  const out=new Set(),d=userDict();
+  (t.match(WORD_RE)||[]).forEach(w=>{
+    const k=wkey(w),tr=GLOSS.get(k)||d.get(k);if(!tr)return;
+    tr.split(/[;,/]/).forEach(v=>{const m=v.match(/[а-яё]+/i);if(m&&m[0].length>=3)out.add(ruStem(m[0]));});
+  });
+  if(ANCH.size>3000)ANCH.clear();
+  ANCH.set(t,out);return out;
+}
+const cues=t=>({q:(t.match(/\?/g)||[]).length,x:(t.match(/!/g)||[]).length,qt:/["“”«»]/.test(t),d:t.match(/\d+/g)||[]});
+// lower is better: about 0 for a good pair, 10 for a bad one, negative with strong anchors
+function pairScore(en,ru,c){
+  const a=en.length,b=ru.length;
+  let v=Math.abs(b-c*a)/(c*a+b+20)*10;
+  const ce=cues(en),cr=cues(ru);
+  v+=Math.min(3,Math.abs(ce.q-cr.q)*0.8)+Math.min(3,Math.abs(ce.x-cr.x)*0.8)+(ce.qt!==cr.qt?0.7:0);
+  ce.d.forEach(n=>{v+=cr.d.includes(n)?-2:1.5;});
+  const an=enAnchors(en);
+  if(an.size){const toks=ruToks(ru);let m=0;an.forEach(s=>{if(toks.some(t=>t.startsWith(s)))m++;});v-=6*m/Math.max(3,an.size);}
+  return v;
+}
+/* Returns, for each English unit, the list of matched translation indices.
+   opts.c: expected Russian/English length ratio; opts.free: unmatched translation units at both ends cost nothing
+   (used when the translation window is wider than the page). */
+function alignUnits(en,ru,opts){
+  const N=en.length,M=ru.length,c=opts.c,free=!!opts.free;
   const moves=[[1,1,0],[1,0,3],[0,1,3],[2,1,1.5],[1,2,1.5]];
   const INF=1e9,cost=[],back=[];
   for(let i=0;i<=N;i++){cost.push(new Array(M+1).fill(INF));back.push(new Array(M+1).fill(null));}
-  cost[0][0]=0;
+  for(let j=0;j<=(free?M:0);j++)cost[0][j]=0;
   for(let i=0;i<=N;i++)for(let j=0;j<=M;j++){
     if(cost[i][j]>=INF)continue;
     for(const [di,dj,pen] of moves){
       const a=i+di,b=j+dj;if(a>N||b>M)continue;
-      const ea=le.slice(i,a).reduce((x,y)=>x+y,0),rb=lr.slice(j,b).reduce((x,y)=>x+y,0);
-      const v=cost[i][j]+pen+(di&&dj?fit(ea,rb):0);
+      const v=cost[i][j]+pen+(di&&dj?pairScore(en.slice(i,a).join(' '),ru.slice(j,b).join(' '),c):0);
       if(v<cost[a][b]){cost[a][b]=v;back[a][b]=[i,j];}
     }
   }
+  let end=M;
+  if(free){for(let j=0;j<=M;j++)if(cost[N][j]<cost[N][end])end=j;}
   const map=en.map(()=>[]);
-  for(let i=N,j=M;i||j;){
-    const [pi,pj]=back[i][j];
+  for(let i=N,j=end;i>0;){
+    const bk=back[i][j];if(!bk)break;
+    const [pi,pj]=bk;
     if(i>pi&&j>pj)for(let x=pi;x<i;x++)for(let y=pj;y<j;y++)map[x].push(y);
     i=pi;j=pj;
   }
   return map;
 }
-// translated paragraphs matching original paragraph pi of the page
+const splitTr=t=>t?t.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean):[];
+const clampC=c=>Math.min(1.6,Math.max(0.8,c||1.12));
+/* translated paragraphs matching original paragraph pi of page n. The translation is searched on this page and
+   the two neighbouring ones: when a whole book is imported, page borders of the translation can drift. */
 function pageTrParas(n){
-  const t=TRP[n];if(!t)return null;
-  const tp=t.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean),en=R.pages[n];
-  // always aligned: equal paragraph counts can still be shifted (an extra title in one, an author line in the other)
-  const map=alignParas(en,tp);
-  return {tp,at:pi=>map[pi]||[]};
+  if(!TRP[n])return null;
+  const prev=splitTr(TRP[n-1]),here=splitTr(TRP[n]),next=splitTr(TRP[n+1]);
+  const tp=prev.concat(here,next),en=R.pages[n];
+  const map=alignUnits(en,tp,{free:true,c:clampC(TRP[n].length/Math.max(1,en.join('').length))});
+  // this page's translation: from the first to the last matched paragraph (unmatched ones in between included)
+  const used=map.flat();
+  const lo=used.length?Math.min(...used):prev.length,hi=used.length?Math.max(...used):prev.length+here.length-1;
+  const pageIdx=[];for(let i=lo;i<=hi;i++)pageIdx.push(i);
+  return {tp,at:pi=>map[pi]||[],pageIdx};
 }
 
 /* ----- where the tapped word is in the translation: the matching sentence, and the word itself if found ----- */
@@ -3359,14 +3395,15 @@ function trVariants(){
 function markTr(t,enPara,c,variants){
   const en=sentSpans(enPara),ru=sentSpans(t);
   let se=en.findIndex(([a,b])=>c.wi>=a&&c.wi<b);if(se<0)se=0;
-  let ri;
-  if(en.length===ru.length)ri=se;
-  else{
-    // same relative position in the paragraph
+  // sentences matched like paragraphs; a sentence may map to one or two translated ones
+  const smap=alignUnits(en.map(([a,b])=>enPara.slice(a,b)),ru.map(([a,b])=>t.slice(a,b)),{c:clampC(t.length/Math.max(1,enPara.length))});
+  let ri=smap[se]||[];
+  if(!ri.length){
+    // unmatched: the same relative position in the paragraph
     const mid=(en[se][0]+en[se][1])/2/Math.max(1,enPara.length)*t.length;
-    ri=ru.findIndex(([a,b])=>mid>=a&&mid<b);if(ri<0)ri=ru.length-1;
+    const k=ru.findIndex(([a,b])=>mid>=a&&mid<b);ri=[k<0?ru.length-1:k];
   }
-  const [sa,sb]=ru[ri]||[0,t.length];
+  const sa=(ru[ri[0]]||[0])[0],sb=(ru[ri[ri.length-1]]||[0,t.length])[1];
   // the word: first token of any translation variant, searched in the sentence, then in the whole text
   const stems=variants.map(v=>ruStem((v.match(/[а-яё]+/i)||[''])[0])).filter(s=>s.length>=3);
   const find=(a,b)=>{const re=/[а-яё]+/gi;re.lastIndex=a;let m;while((m=re.exec(t))&&m.index<b){const tok=m[0].toLowerCase().replace(/ё/g,'е');if(stems.some(s=>tok.startsWith(s)))return [m.index,m.index+m[0].length];}return null;};
@@ -3409,7 +3446,7 @@ function renderPageTr(){
     const parts=marked?marked.html.split('\n\n'):[];
     const note=!ti.length?'не нашёлся: в переводе этой страницы, похоже, нет такого абзаца':marked.found?'выделены предложение и слово':'выделено предложение; само слово в переводе не нашлось, перевод может быть другим словом';
     html+=`<div class="ovtr"><div class="meta">Перевод абзаца · ${note}</div>${parts.map(p=>`<p>${p}</p>`).join('')}</div>
-    <details class="ovall" open><summary>Вся страница</summary>${pt.tp.map((x,i)=>{const k=ti.indexOf(i);return k>=0?`<p class="hl">${parts[k]}</p>`:`<p>${esc(x)}</p>`;}).join('')}</details>`;
+    <details class="ovall" open><summary>Вся страница</summary>${pt.pageIdx.map(i=>{const k=ti.indexOf(i);return k>=0?`<p class="hl">${parts[k]}</p>`:`<p>${esc(pt.tp[i])}</p>`;}).join('')}</details>`;
   }else if(CH.ok){
     html+='<p class="muted">Перевожу страницу встроенным переводчиком…</p>';
   }else{
