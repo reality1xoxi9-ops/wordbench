@@ -41,10 +41,10 @@ export async function run({ root, date, topic = 'all', level = 'auto', count, pr
     const allKnown = Object.values(known).flat();
     const kTopic = knownWordsOf(known, t);
     const r = await collectItems({
-      generate: (p, o) => provider.generate(p, o), n, description: cfg.description, level: lv,
+      generate: (p, o) => provider.generate(p, o), n, description: cfg.description, subtopics: cfg.subtopics || [], level: lv,
       known: allKnown.filter(w => !kTopic.includes(w)).concat(kTopic), log
     });
-    const why = Object.entries(r.reasons).map(([k, v]) => `${k}: ${v}`).join('; ') || 'нет';
+    const why = Object.entries(r.reasons).map(([k, v]) => `${k}: ${v}` + (r.samples && r.samples[k] ? ` (${r.samples[k].join(' | ')})` : '')).join('; ') || 'нет';
     log(`${id}: получено ${r.requested}, прошло проверку ${r.items.length}, отбраковано: ${why}`);
     if (r.error) { res.failed.push({ topic: t, error: `${id}: ${r.error}` }); continue; }
     const pack = makePack({ id, title: packTitle(cfg.label, lv, date), topic: t, level: lv, date, provider: provider.name, items: r.items });

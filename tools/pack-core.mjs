@@ -3,12 +3,13 @@ import { validateItems, normW } from './validate.mjs';
 
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
 
-export function buildPrompt({ n, description, level, knownSample }) {
+// A long "do not use" list made GigaChat Lite repeat those very words (41 of 71 on 2026-10-20), so the prompt
+// steers by a narrow subtopic instead and lists only words already picked in this run; known words are filtered later.
+export function buildPrompt({ n, description, focus, level, knownSample }) {
   return `You are an experienced English teacher for Russian-speaking adults.
 Create ${n} useful English words or multi-word expressions on the topic "${description}" for CEFR level ${level}.
-Prefer natural collocations and phrasal verbs that people really use. Avoid very basic words (A1) and rare jargon.
-Do NOT include any of these (already known): ${knownSample.length ? knownSample.join(', ') : '(none)'}.
-For each item give: "w" (the English word or expression, lowercase unless a proper noun),
+${focus ? `Focus only on this narrow area: ${focus}. Choose specific vocabulary of this area, not general words of the topic.\n` : ''}Prefer natural collocations and phrasal verbs that people really use. Avoid very basic words (A1) and rare jargon.
+${knownSample && knownSample.length ? `Already chosen, do not repeat: ${knownSample.join(', ')}.\n` : ''}For each item give: "w" (only the English word or expression itself, lowercase, Latin letters only, no translation, no brackets, at most 4 words),
 "tr" (Russian translation, 1–3 variants separated by "; "),
 "pos" (one of n, v, adj, adv, phr),
 "ex" (exactly 2 examples: objects {"en": natural English sentence of 6–16 words that contains "w" exactly or in an inflected form, "ru": its Russian translation}),
@@ -126,19 +127,22 @@ export function addToIndex(index, meta, date) {
  * Request budget: the batches n needs, plus `retries` extra per batch (n=20, batch=10, retries=2 → 6 requests).
  * generate: async (prompt, {schema}) -> text. Returns {items, requested, reasons, attempts, error?}.
  */
-export async function collectItems({ generate, n, description, level, known, retries = 2, batch = 10, log = () => {} }) {
+export async function collectItems({ generate, n, description, subtopics = [], level, known, retries = 3, batch = 10, log = () => {} }) {
   const knownSet = [...known];
   const target = Math.ceil(n * 0.7);
   const maxRequests = Math.ceil(n / batch) * (1 + retries);
   let items = [], requested = 0, attempts = 0;
-  const reasons = {};
+  const reasons = {}, samples = {};
   const count = (k, v = 1) => { reasons[k] = (reasons[k] || 0) + v; };
+  // each request gets the next subtopic, starting at a random one so weekly runs differ
+  const start = Math.floor(Math.random() * Math.max(1, subtopics.length));
   while (attempts < maxRequests && items.length < n) {
     attempts++;
     const have = items.map(x => x.w);
+    const focus = subtopics.length ? subtopics[(start + attempts - 1) % subtopics.length] : '';
     // ask for a few extra: some answers repeat known words or fail the checks
     const ask = Math.min(batch, n - items.length) + 2;
-    const prompt = buildPrompt({ n: ask, description, level, knownSample: have.concat(knownSet.slice(-300)).slice(0, 320) });
+    const prompt = buildPrompt({ n: ask, description, focus, level, knownSample: have });
     let raw = [], salvaged = false;
     try {
       const data = extractJSON(await generate(prompt, { schema: ITEMS_SCHEMA }));
@@ -154,11 +158,12 @@ export async function collectItems({ generate, n, description, level, known, ret
     requested += raw.length;
     const r = validateItems(raw, knownSet.concat(have));
     Object.entries(r.reasons).forEach(([k, v]) => count(k, v));
+    Object.entries(r.samples).forEach(([k, v]) => { samples[k] = (samples[k] || []).concat(v).slice(0, 4); });
     items = items.concat(r.items);
-    log(`  запрос ${attempts}: получено ${raw.length}${salvaged ? ' (JSON с ошибками)' : ''}, прошло проверку ${r.items.length}, всего ${items.length} из ${n}`);
+    log(`  запрос ${attempts}${focus ? ` [${focus}]` : ''}: получено ${raw.length}${salvaged ? ' (JSON с ошибками)' : ''}, прошло проверку ${r.items.length}, всего ${items.length} из ${n}`);
   }
   items = items.slice(0, n);
-  const out = { items, requested, reasons, attempts };
+  const out = { items, requested, reasons, samples, attempts };
   if (items.length < target && items.length < 8) out.error = `прошло проверку только ${items.length} из ${n}`;
   return out;
 }

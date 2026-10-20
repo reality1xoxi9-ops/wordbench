@@ -5,24 +5,28 @@
     "talk": {
       "label": "Разговорное",
       "description": "everyday spoken English: small talk, making plans, feelings and reactions, phrasal verbs and idioms used in casual conversation",
+      "subtopics": ["agreeing and disagreeing politely", "making and changing plans with friends", "reacting to news and surprises", "complaining and apologising", "money and shopping chat", "moods, stress and tiredness", "phrasal verbs about relationships", "asking for and giving favours", "talking about the weekend and free time", "idioms for success and failure"],
       "levels": ["B1", "B2"],
       "count": 20
     },
     "tech": {
       "label": "Технологии",
       "description": "technology in daily life and work: smartphones, apps, the internet, software, AI, online security, gadgets",
+      "subtopics": ["fixing problems with a phone or laptop", "online accounts and passwords", "social media habits", "working remotely with online tools", "streaming and subscriptions", "privacy and online scams", "software updates and installation", "artificial intelligence in everyday life", "online shopping and delivery tracking", "files, folders and cloud backups"],
       "levels": ["B1", "B2"],
       "count": 20
     },
     "news": {
       "label": "Новости",
       "description": "news and current affairs: politics, economy, society, incidents, reporting verbs and typical headline language",
+      "subtopics": ["elections and government decisions", "prices, salaries and the economy", "weather disasters and emergencies", "crime and court cases", "health and medicine news", "business deals and companies", "protests and public opinion", "science and space news", "reporting verbs (claim, deny, urge, warn)", "transport and city infrastructure"],
       "levels": ["B1", "B2"],
       "count": 20
     },
     "build": {
       "label": "Строительство",
       "description": "construction: the building site, structures, foundations, building materials, project documentation, talking to the site manager",
+      "subtopics": ["interior finishing: plastering, tiling, painting", "hand tools and power tools", "roofing and waterproofing", "plumbing and electrical installation", "site safety and protective equipment", "contracts, estimates and invoices", "inspections, defects and repairs", "heavy machinery and earthworks", "windows, doors and insulation", "scheduling, delays and progress meetings"],
       "levels": ["B1", "B2"],
       "count": 20
     }

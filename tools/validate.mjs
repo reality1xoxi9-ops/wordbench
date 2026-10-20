@@ -71,6 +71,14 @@ export function wordInSentence(w, sentence) {
 
 const wordCount = s => (String(s).trim().match(/\S+/g) || []).length;
 
+// "reinforced concrete — железобетон", "plaster (n.)", "to tile: класть плитку" -> the English part only;
+// left as is when no clean Latin part remains, so the item is still rejected with a clear reason
+export function cleanWord(s) {
+  const orig = String(s || '').trim();
+  let w = orig.replace(/\s*\([^)]*\)/g, '').split(/\s+[—–-]\s+|\s*:\s+|\s*=\s*/)[0].replace(/[.,;!?]+$/, '').replace(/^["'«]+|["'»]+$/g, '').trim();
+  return /^[A-Za-z][A-Za-z'’ -]*$/.test(w) ? w : orig;
+}
+
 // models name fields their own way: examples/example, english/russian, translation as an array, etc.
 // first non-empty field among keys; an array of strings counts too ("tr": ["a", "b"] -> "a; b")
 const pickStr = (o, keys) => {
@@ -84,7 +92,7 @@ const pickStr = (o, keys) => {
 export function normalizeItem(raw) {
   if (!raw || typeof raw !== 'object') return raw;
   const it = Object.assign({}, raw);
-  it.w = pickStr(raw, ['w', 'word', 'expression', 'phrase', 'term']);
+  it.w = cleanWord(pickStr(raw, ['w', 'word', 'expression', 'phrase', 'term']));
   it.tr = pickStr(raw, ['tr', 'translation', 'ru', 'russian']);
   it.pos = pickStr(raw, ['pos', 'part_of_speech', 'partOfSpeech']);
   let ex = raw.ex ?? raw.examples ?? raw.example ?? [];
@@ -132,16 +140,21 @@ export function checkItem(raw, known) {
 }
 
 // validate a list of raw items: drops bad ones and duplicates, counts the reasons
+// and keeps up to 4 rejected words per reason for the log
 export function validateItems(rawItems, knownWords) {
   const known = new Set([...(knownWords || [])].map(normW));
-  const seen = new Set(), items = [], reasons = {};
-  const reject = r => { reasons[r] = (reasons[r] || 0) + 1; };
+  const seen = new Set(), items = [], reasons = {}, samples = {};
+  const reject = (r, raw) => {
+    reasons[r] = (reasons[r] || 0) + 1;
+    const w = raw && typeof raw === 'object' ? String(raw.w ?? raw.word ?? '').slice(0, 60) : '';
+    if (w && (samples[r] = samples[r] || []).length < 4) samples[r].push(w);
+  };
   for (const raw of Array.isArray(rawItems) ? rawItems : []) {
     const r = checkItem(raw, known);
-    if (!r.item) { reject(r.reason); continue; }
-    if (seen.has(r.item.w)) { reject('дубль в пакете'); continue; }
+    if (!r.item) { reject(r.reason, raw); continue; }
+    if (seen.has(r.item.w)) { reject('дубль в пакете', raw); continue; }
     seen.add(r.item.w);
     items.push(r.item);
   }
-  return { items, reasons };
+  return { items, reasons, samples };
 }
