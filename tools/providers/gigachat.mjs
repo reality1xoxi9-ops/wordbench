@@ -28,19 +28,35 @@ async function getToken() {
 
 export const name = 'gigachat';
 export const model = MODEL;
-export async function generate(prompt) {
-  const res = await fetchRetry(BASE_URL + '/chat/completions', {
+// structured output: response_format json_schema + strict (post-chat reference, 2026-10); turned off for
+// the rest of the run if the model rejects it
+let useSchema = process.env.GIGACHAT_JSON_SCHEMA !== 'off';
+async function call(prompt, schema) {
+  const body = {
+    model: MODEL,
+    messages: [
+      { role: 'system', content: 'You reply with valid JSON only.' },
+      { role: 'user', content: prompt }
+    ],
+    temperature: 0.5,
+    max_tokens: 6000
+  };
+  if (schema) body.response_format = { type: 'json_schema', schema, strict: true };
+  return fetchRetry(BASE_URL + '/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: 'Bearer ' + await getToken() },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: 'system', content: 'You reply with valid JSON only.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7
-    })
+    body: JSON.stringify(body)
   }, { label: 'GigaChat' });
+}
+export async function generate(prompt, opts = {}) {
+  let res;
+  try { res = await call(prompt, useSchema && opts.schema); }
+  catch (e) {
+    if (!(useSchema && opts.schema && [400, 422].includes(e.status))) throw e;
+    console.log(`  GigaChat не принял response_format (${e.message.slice(0, 160)}), дальше без схемы`);
+    useSchema = false;
+    res = await call(prompt, null);
+  }
   const data = await res.json();
   const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
   if (!text) throw new Error('GigaChat вернул пустой ответ');
