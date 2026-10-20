@@ -11,6 +11,16 @@
       "count": 20,
       "created": "2026-10-20",
       "provider": "gigachat"
+    },
+    {
+      "id": "2026-10-20-talk-b1",
+      "file": "packs/2026-10-20-talk-b1.json",
+      "title": "Разговорное · B1 · 20 окт",
+      "topic": "talk",
+      "level": "B1",
+      "count": 20,
+      "created": "2026-10-20",
+      "provider": "gigachat"
     }
   ]
 }

@@ -1,0 +1,310 @@
+{
+  "id": "2026-10-20-talk-b1",
+  "title": "Разговорное · B1 · 20 окт",
+  "topic": "talk",
+  "level": "B1",
+  "created": "2026-10-20",
+  "provider": "gigachat",
+  "items": [
+    {
+      "w": "ask for help",
+      "tr": "просить о помощи",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "Can you help me carry these boxes? I’m asking for help.",
+          "ru": "Вы можете мне помочь отнести эти коробки? Я прошу вас об этом."
+        },
+        {
+          "en": "She asked for help when she was feeling overwhelmed.",
+          "ru": "Она попросила о помощи, когда почувствовала себя перегруженной."
+        }
+      ]
+    },
+    {
+      "w": "offer help",
+      "tr": "предложить помощь",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "Would you like some help with your project? I'm offering my assistance.",
+          "ru": "Вам нужна помощь с вашим проектом? Я предлагаю свою помощь."
+        },
+        {
+          "en": "He offered help to his friend who was struggling with his homework.",
+          "ru": "Он предложил помощь своему другу, которому было трудно с домашним заданием."
+        }
+      ]
+    },
+    {
+      "w": "accept help",
+      "tr": "принять помощь",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "Thank you for offering to help; I'll accept your help today.",
+          "ru": "Спасибо, что предложили помощь; я приму вашу сегодня."
+        },
+        {
+          "en": "I appreciate your offer, but I can handle it myself. No thanks for accepting help.",
+          "ru": "Я ценю ваше предложение, но справлюсь сам. Не надо принимать мою помощь."
+        }
+      ]
+    },
+    {
+      "w": "decline help",
+      "tr": "отклонить помощь",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "I don't need any help right now, thank you for offering. I decline your help.",
+          "ru": "Мне сейчас не нужна никакая помощь, спасибо за предложение. Я отказываюсь от вашей помощи."
+        },
+        {
+          "en": "She declined the offer of help because she wanted to finish her task alone.",
+          "ru": "Она отклонила предложение помощи, потому что хотела завершить задание сама."
+        }
+      ]
+    },
+    {
+      "w": "return a favour",
+      "tr": "возместить услугу",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "Let's grab coffee next week; that's how I plan to return the favor.",
+          "ru": "Давайте встретимся выпить кофе на следующей неделе – вот мой способ отплатить вам услугой."
+        },
+        {
+          "en": "She returned the favor by helping him move into his new apartment.",
+          "ru": "Она возместила услугу, помогая ему переехать в новую квартиру."
+        }
+      ]
+    },
+    {
+      "w": "owe someone a favour",
+      "tr": "быть кому-то обязанным",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "After he helped me last time, I feel like I owe him a favor.",
+          "ru": "После того как он мне помог в прошлый раз, я чувствую себя обязанным ему услугой."
+        },
+        {
+          "en": "She owes her colleague a favor because he lent her money last month.",
+          "ru": "Она обязана коллеге услугой, потому что он одолжил ей деньги месяц назад."
+        }
+      ]
+    },
+    {
+      "w": "pay back a favour",
+      "tr": "отплатить услугой",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I'll pay you back the favor by doing your laundry tomorrow.",
+          "ru": "Я верну тебе услугу, постирав твоё бельё завтра."
+        },
+        {
+          "en": "She paid him back the favor by inviting him to her birthday party.",
+          "ru": "Она отплатила ему услугой, пригласив его на свой день рождения."
+        }
+      ]
+    },
+    {
+      "w": "do someone a favour",
+      "tr": "оказать кому-то услугу",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Could you do me a favor and pick up some groceries on your way home?",
+          "ru": "Не могли бы вы оказать мне услугу и купить кое-что из продуктов по дороге домой?"
+        },
+        {
+          "en": "She did her friend a favor by lending her car for the day.",
+          "ru": "Она оказала услугу своей подруге, дав ей машину на весь день."
+        }
+      ]
+    },
+    {
+      "w": "favorable conditions",
+      "tr": "благоприятные условия",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "These favorable conditions allowed us to complete the project ahead of schedule.",
+          "ru": "Эти благоприятные условия позволили нам завершить проект раньше срока."
+        },
+        {
+          "en": "They found favorable conditions for starting their business in this city.",
+          "ru": "Они нашли благоприятные условия для начала своего бизнеса в этом городе."
+        }
+      ]
+    },
+    {
+      "w": "in return for",
+      "tr": "в обмен на",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "In return for your kindness, I'll be happy to assist you whenever needed.",
+          "ru": "В обмен на вашу доброту я буду рад помочь вам всякий раз, когда это потребуется."
+        },
+        {
+          "en": "She gave him a gift in return for his generous help.",
+          "ru": "Она подарила ему подарок в обмен на его щедрую помощь."
+        }
+      ]
+    },
+    {
+      "w": "get even",
+      "tr": "отыграться; вернуть долг",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I'll get even with you someday for all the times you've helped me.",
+          "ru": "Я когда-нибудь отыграюсь с вами за все те разы, когда вы помогали мне."
+        },
+        {
+          "en": "She wants to get even with her friend for the favor she recently received.",
+          "ru": "Она хочет отыграться со своей подруги за услугу, которую недавно получила."
+        }
+      ]
+    },
+    {
+      "w": "chill out",
+      "tr": "расслабиться, отдохнуть",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I need to chill out after such a busy week.",
+          "ru": "Мне нужно расслабиться после такой загруженной недели."
+        },
+        {
+          "en": "Let's go somewhere quiet to chill out.",
+          "ru": "Пойдём куда-нибудь тихое, чтобы отдохнуть."
+        }
+      ]
+    },
+    {
+      "w": "browse online",
+      "tr": "серфить онлайн, искать информацию в интернете",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "She likes to browse online when she has some free time.",
+          "ru": "Она любит серфить онлайн, когда у неё есть свободное время."
+        },
+        {
+          "en": "I spent hours browsing online for new recipes.",
+          "ru": "Я провёл несколько часов, ища новые рецепты в интернете."
+        }
+      ]
+    },
+    {
+      "w": "kill time",
+      "tr": "убивать время, заниматься чем-то несерьёзным",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I killed time watching old movies last night.",
+          "ru": "Прошлым вечером я убил время, смотря старые фильмы."
+        },
+        {
+          "en": "When I'm bored, I like to kill time reading comics.",
+          "ru": "Когда мне скучно, я люблю читать комиксы, чтобы убить время."
+        }
+      ]
+    },
+    {
+      "w": "relaxing activity",
+      "tr": "занятие для отдыха и расслабления",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Reading is one of my favorite relaxing activities.",
+          "ru": "Чтение — одно из моих любимых занятий для отдыха."
+        },
+        {
+          "en": "What are your favorite relaxing activities?",
+          "ru": "Какие занятия для отдыха тебе нравятся больше всего?"
+        }
+      ]
+    },
+    {
+      "w": "spend quality time together",
+      "tr": "провести время вместе качественно, приятно провести время",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "We try to spend quality time together whenever possible.",
+          "ru": "Мы стараемся проводить время вместе, когда это возможно."
+        },
+        {
+          "en": "It's important to spend quality time together as a family.",
+          "ru": "Очень важно проводить качественное время вместе всей семьёй."
+        }
+      ]
+    },
+    {
+      "w": "recharge batteries",
+      "tr": "отдохнуть, набраться сил",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "After a long week, it's good to recharge our batteries on the weekend.",
+          "ru": "После долгой рабочей недели хорошо отдыхать на выходных, чтобы восстановить силы."
+        },
+        {
+          "en": "Taking a vacation helps us recharge our batteries.",
+          "ru": "Отпуск помогает нам восстановить силы."
+        }
+      ]
+    },
+    {
+      "w": "get away from it all",
+      "tr": "уйти от всего, отключиться от повседневности",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Sometimes we need to get away from it all to relax properly.",
+          "ru": "Иногда нам нужно уйти от всего, чтобы нормально отдохнуть."
+        },
+        {
+          "en": "Their cabin in the mountains is perfect for getting away from it all.",
+          "ru": "Их домик в горах идеально подходит для того, чтобы отключиться от повседневной суеты."
+        }
+      ]
+    },
+    {
+      "w": "unwind",
+      "tr": "расслабиться, снять напряжение",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "After a stressful day, he likes to unwind by listening to music.",
+          "ru": "После напряжённого дня он любит расслабиться, слушая музыку."
+        },
+        {
+          "en": "It’s important to take time to unwind during the week.",
+          "ru": "Важно находить время, чтобы расслабиться в течение недели."
+        }
+      ]
+    },
+    {
+      "w": "down time",
+      "tr": "свободное время, отдых",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "I need some down time after working so hard.",
+          "ru": "Мне нужно немного свободного времени после такого тяжёлого труда."
+        },
+        {
+          "en": "During their vacation, they had plenty of down time to relax.",
+          "ru": "Во время отпуска у них было достаточно свободного времени, чтобы спокойно отдохнуть."
+        }
+      ]
+    }
+  ]
+}
