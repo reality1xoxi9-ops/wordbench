@@ -1,0 +1,318 @@
+{
+  "id": "2026-10-20-tech-b2",
+  "title": "Технологии · B2 · 20 окт",
+  "topic": "tech",
+  "level": "B2",
+  "created": "2026-10-20",
+  "provider": "gigachat",
+  "items": [
+    {
+      "w": "streaming service",
+      "tr": "стриминговый сервис; платформа потокового видео",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Netflix is a popular streaming service.",
+          "ru": "Netflix — популярный стриминговый сервис."
+        },
+        {
+          "en": "She subscribed to several streaming services last month.",
+          "ru": "Она подписалась на несколько стриминговых сервисов в прошлом месяце."
+        }
+      ]
+    },
+    {
+      "w": "subscription",
+      "tr": "подписка",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "I canceled my subscription because I wasn't using the app anymore.",
+          "ru": "Я отменила подписку, потому что больше не использовала приложение."
+        },
+        {
+          "en": "He has multiple subscriptions to different streaming platforms.",
+          "ru": "У него несколько подписок на разные стриминговые платформы."
+        }
+      ]
+    },
+    {
+      "w": "subscribe",
+      "tr": "подписаться",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "Did you subscribe to the new movie channel?",
+          "ru": "Вы подписались на новый канал фильмов?"
+        },
+        {
+          "en": "They decided to subscribe to the premium package.",
+          "ru": "Они решили оформить подписку на премиум-пакет."
+        }
+      ]
+    },
+    {
+      "w": "cancel subscription",
+      "tr": "отменить подписку",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I had to cancel my subscription due to financial reasons.",
+          "ru": "Мне пришлось отменить подписку из-за финансовых причин."
+        },
+        {
+          "en": "She accidentally canceled her subscription while trying to change settings.",
+          "ru": "Она случайно отменила свою подписку, пытаясь изменить настройки."
+        }
+      ]
+    },
+    {
+      "w": "stream content",
+      "tr": "потоковое содержимое",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The platform offers a wide variety of stream content from movies to documentaries.",
+          "ru": "Платформа предлагает широкий выбор потокового контента — от фильмов до документальных фильмов."
+        },
+        {
+          "en": "He enjoys watching stream content on his tablet during his lunch break.",
+          "ru": "Он любит смотреть потоковый контент на своём планшете во время перерыва на обед."
+        }
+      ]
+    },
+    {
+      "w": "streaming device",
+      "tr": "устройство для просмотра стриминга",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "My friend uses an old streaming device to watch TV shows.",
+          "ru": "Мой друг пользуется старым устройством для просмотра стриминга, чтобы смотреть сериалы."
+        },
+        {
+          "en": "He bought a new streaming device to enhance his home entertainment experience.",
+          "ru": "Он купил новое устройство для просмотра стриминга, чтобы улучшить своё домашнее развлечение."
+        }
+      ]
+    },
+    {
+      "w": "premium subscription",
+      "tr": "премиальная подписка",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "She prefers the premium subscription because it includes exclusive content.",
+          "ru": "Она предпочитает премиальную подписку, потому что там есть эксклюзивный контент."
+        },
+        {
+          "en": "He upgraded to the premium subscription to get access to high-quality videos.",
+          "ru": "Он перешёл на премиальную подписку, чтобы получить доступ к высококачественным видеороликам."
+        }
+      ]
+    },
+    {
+      "w": "free trial",
+      "tr": "бесплатный пробный период",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "I took advantage of the free trial to test out the new streaming service.",
+          "ru": "Я воспользовался бесплатным пробным периодом, чтобы протестировать новый стриминговый сервис."
+        },
+        {
+          "en": "She signed up for the free trial but ended up buying the full subscription.",
+          "ru": "Она зарегистрировалась на бесплатный пробный период, но в итоге купила полную подписку."
+        }
+      ]
+    },
+    {
+      "w": "renew subscription",
+      "tr": "продлить подписку",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Don't forget to renew your subscription before it expires.",
+          "ru": "Не забудьте продлить вашу подписку до истечения срока действия."
+        },
+        {
+          "en": "She automatically renewed her subscription through her account settings.",
+          "ru": "Она автоматически продлила свою подписку через настройки своего аккаунта."
+        }
+      ]
+    },
+    {
+      "w": "stream quality",
+      "tr": "качество потока",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The stream quality was excellent on our new Wi-Fi connection.",
+          "ru": "Качество потока было отличным при нашем новом подключении к Wi-Fi."
+        },
+        {
+          "en": "She adjusted the stream quality settings to improve the picture clarity.",
+          "ru": "Она настроила качество потока, чтобы улучшить чёткость картинки."
+        }
+      ]
+    },
+    {
+      "w": "buffering",
+      "tr": "буферизация",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The video kept buffering, which made it difficult to watch.",
+          "ru": "Видео постоянно буферизовалось, что затрудняло просмотр."
+        },
+        {
+          "en": "Buffering takes time, so be patient when waiting for the video to start.",
+          "ru": "Буферизация занимает время, поэтому будьте терпеливы, ожидая начала видео."
+        }
+      ]
+    },
+    {
+      "w": "buffering issues",
+      "tr": "проблемы с буферизацией",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "We encountered some buffering issues with the live broadcast.",
+          "ru": "У нас возникли некоторые проблемы с буферизацией при прямой трансляции."
+        },
+        {
+          "en": "There were frequent buffering issues with that particular streaming service.",
+          "ru": "С этим конкретным стриминговым сервисом часто возникали проблемы с буферизацией."
+        }
+      ]
+    },
+    {
+      "w": "phishing attack",
+      "tr": "фишинговая атака",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "I almost fell for a phishing attack but recognized the suspicious email.",
+          "ru": "Я чуть не попался на фишинговую атаку, но заметил подозрительное письмо."
+        },
+        {
+          "en": "Our IT department warned us about recent phishing attacks targeting employees.",
+          "ru": "Наш отдел ИТ предупредил нас о недавних фишинговых атаках, направленных на сотрудников."
+        }
+      ],
+      "note": "вид мошенничества, когда пользователям отправляют поддельные письма, пытаясь получить личные данные"
+    },
+    {
+      "w": "malware",
+      "tr": "вредоносное ПО",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "My computer got infected with malware from an untrusted website.",
+          "ru": "Мой компьютер заразился вредоносным ПО с ненадёжного сайта."
+        },
+        {
+          "en": "Antivirus software helps protect against malware infections.",
+          "ru": "Антивирусное программное обеспечение помогает защитить от заражения вредоносным ПО."
+        }
+      ],
+      "note": "программы или коды, созданные для повреждения, кражи данных или нарушения работы компьютеров"
+    },
+    {
+      "w": "password protection",
+      "tr": "защита паролем",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Strong password protection is essential for online security.",
+          "ru": "Надежная защита паролем является основой онлайн-безопасности."
+        },
+        {
+          "en": "She uses two-factor authentication as additional password protection.",
+          "ru": "Она использует двухфакторную аутентификацию в качестве дополнительной защиты паролем."
+        }
+      ],
+      "note": "использование сложных паролей и других методов для предотвращения несанкционированного доступа"
+    },
+    {
+      "w": "scam",
+      "tr": "мошенничество",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "That offer sounds too good to be true—it's probably a scam.",
+          "ru": "Эта сделка звучит слишком хорошо, чтобы быть правдой—это, вероятно, мошенничество."
+        },
+        {
+          "en": "I've heard many stories about online scams targeting young people.",
+          "ru": "Я слышал много историй о мошенничестве в интернете, направленном против молодых людей."
+        }
+      ],
+      "note": "обман с целью выманивания денег или личных данных"
+    },
+    {
+      "w": "privacy settings",
+      "tr": "настройки конфиденциальности",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Adjust your privacy settings to control who can see your posts.",
+          "ru": "Настройте настройки конфиденциальности, чтобы контролировать, кто может видеть ваши посты."
+        },
+        {
+          "en": "She changed her privacy settings to make sure her personal information was safe.",
+          "ru": "Она изменила настройки конфиденциальности, чтобы убедиться, что её личная информация находится в безопасности."
+        }
+      ],
+      "note": "параметры, позволяющие управлять уровнем доступа других пользователей к личным данным"
+    },
+    {
+      "w": "secure connection",
+      "tr": "безопасное соединение",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Use secure connections when accessing sensitive information online.",
+          "ru": "Используйте безопасные соединения при доступе к конфиденциальной информации в интернете."
+        },
+        {
+          "en": "The website uses HTTPS for a secure connection and protects user data.",
+          "ru": "Этот сайт использует HTTPS для безопасного соединения и защищает данные пользователей."
+        }
+      ],
+      "note": "соединение, защищённое протоколом шифрования, предотвращающее перехват данных третьими лицами"
+    },
+    {
+      "w": "fraudulent activity",
+      "tr": "мошеннические действия",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Police are investigating fraudulent activities linked to an online marketplace.",
+          "ru": "Полиция расследует случаи мошеннических действий, связанных с онлайн-площадкой."
+        },
+        {
+          "en": "They reported fraudulent activity involving their credit card statements.",
+          "ru": "Они сообщили о случаях мошеннических действий, связанных с их выписками по кредитной карте."
+        }
+      ],
+      "note": "действия, направленные на обман или незаконное получение выгоды"
+    },
+    {
+      "w": "phish",
+      "tr": "фишинг",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "Scammers try to phish people's personal details by sending fake emails.",
+          "ru": "Мошенники пытаются украсть личные данные людей, отправляя фальшивые электронные письма."
+        },
+        {
+          "en": "Be careful not to fall for phishes; always check links carefully.",
+          "ru": "Будьте осторожны, не попадитесь на фишинг; всегда тщательно проверяйте ссылки."
+        }
+      ],
+      "note": "действие по попытке обмана человека с помощью поддельных сообщений для получения личной информации"
+    }
+  ]
+}

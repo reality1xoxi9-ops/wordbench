@@ -1,0 +1,330 @@
+{
+  "id": "2026-10-20-talk-b2",
+  "title": "Разговорное · B2 · 20 окт",
+  "topic": "talk",
+  "level": "B2",
+  "created": "2026-10-20",
+  "provider": "gigachat",
+  "items": [
+    {
+      "w": "hit the mark",
+      "tr": "попасть в цель; добиться успеха",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "She hit the mark with her presentation.",
+          "ru": "Она попала в цель со своей презентацией."
+        },
+        {
+          "en": "They finally hit the mark with their new product launch.",
+          "ru": "Они наконец добились успеха с запуском своего нового продукта."
+        }
+      ],
+      "note": "часто используется в бизнесе и образовании"
+    },
+    {
+      "w": "fall short",
+      "tr": "не достичь цели; не справиться",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Their efforts fell short of expectations.",
+          "ru": "Их усилия оказались недостаточны для удовлетворения ожиданий."
+        },
+        {
+          "en": "The team's performance fell short in the final match.",
+          "ru": "Выступление команды оказалось недостаточно успешным в финальном матче."
+        }
+      ],
+      "note": "часто употребляется в спорте и учёбе"
+    },
+    {
+      "w": "come up short",
+      "tr": "оказаться недостаточным; не хватить",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "The budget came up short again last month.",
+          "ru": "Бюджет снова оказался недостаточным в прошлом месяце."
+        },
+        {
+          "en": "Our resources came up short when trying to complete the project.",
+          "ru": "Наших ресурсов оказалось недостаточно, когда мы пытались завершить проект."
+        }
+      ],
+      "note": "часто встречается в финансовых и рабочих ситуациях"
+    },
+    {
+      "w": "miss the boat",
+      "tr": "упустить возможность; опоздать",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "He missed the boat on that job opportunity.",
+          "ru": "Он упустил шанс получить эту работу."
+        },
+        {
+          "en": "Don't miss the boat if you want to join our team.",
+          "ru": "Не упусти свой шанс присоединиться к нашей команде."
+        }
+      ],
+      "note": "часто говорится об упущенных возможностях"
+    },
+    {
+      "w": "get ahead",
+      "tr": "достичь успеха; продвинуться вперёд",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "She's always working hard to get ahead in her career.",
+          "ru": "Она всегда усердно работает, чтобы добиться успеха в карьере."
+        },
+        {
+          "en": "With his new strategy, he got ahead in just six months.",
+          "ru": "Используя новую стратегию, он достиг успеха всего за шесть месяцев."
+        }
+      ],
+      "note": "часто применяется в профессиональной сфере"
+    },
+    {
+      "w": "run into trouble",
+      "tr": "наткнуться на проблемы; столкнуться с неудачами",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Their plan ran into trouble halfway through.",
+          "ru": "Их план наткнулся на проблемы на полпути."
+        },
+        {
+          "en": "When they tried to expand their business, they ran into trouble with regulations.",
+          "ru": "Когда они попытались расширить бизнес, они столкнулись с проблемами регулирования."
+        }
+      ],
+      "note": "обычно используется в деловых и личных ситуациях"
+    },
+    {
+      "w": "struggle to succeed",
+      "tr": "бороться за успех; тяжело добиваться успеха",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Many young entrepreneurs struggle to succeed in their businesses.",
+          "ru": "Многие молодые предприниматели тяжело добиваются успеха в своём деле."
+        },
+        {
+          "en": "I struggled to succeed in my first year at university.",
+          "ru": "Мне было трудно добиться успеха в первый год обучения в университете."
+        }
+      ],
+      "note": "часто упоминается в образовательных и профессиональных контекстах"
+    },
+    {
+      "w": "fail miserably",
+      "tr": "полностью провалиться; потерпеть сокрушительное поражение",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Their new product failed miserably in the market.",
+          "ru": "Их новый продукт полностью провалился на рынке."
+        },
+        {
+          "en": "The team failed miserably in the championship game.",
+          "ru": "Команда провалилась в решающем матче чемпионата."
+        }
+      ],
+      "note": "сильный негативный оттенок, часто используется в спортивных и коммерческих ситуациях"
+    },
+    {
+      "w": "bounce back",
+      "tr": "возобновить активность; восстановиться после неудачи",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "After failing the exam, she bounced back and passed the next one easily.",
+          "ru": "После провала на экзамене она восстановила силы и легко сдала следующий."
+        },
+        {
+          "en": "The company bounced back quickly after the economic crisis.",
+          "ru": "Компания быстро оправилась после экономического кризиса."
+        }
+      ],
+      "note": "говорится о восстановлении после трудностей"
+    },
+    {
+      "w": "turn out well",
+      "tr": "выйти удачно; завершиться успешно",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Everything turned out well in the end.",
+          "ru": "Всё закончилось хорошо в конце концов."
+        },
+        {
+          "en": "Their trip turned out well despite some initial difficulties.",
+          "ru": "Несмотря на некоторые первоначальные трудности, поездка прошла удачно."
+        }
+      ],
+      "note": "часто говорится о событиях или проектах, закончившихся успешно"
+    },
+    {
+      "w": "end up in failure",
+      "tr": "закончиться неудачей; привести к провалу",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Their relationship ended up in failure after two years.",
+          "ru": "Их отношения закончились провалом спустя два года."
+        },
+        {
+          "en": "If we don't take action now, we'll end up in failure.",
+          "ru": "Если мы сейчас не предпримем никаких мер, нас ждёт провал."
+        }
+      ],
+      "note": "выражает итоговый результат неудачи"
+    },
+    {
+      "w": "learn from mistakes",
+      "tr": "извлекать уроки из ошибок; учиться на ошибках",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "It's important to learn from mistakes to avoid repeating them.",
+          "ru": "Важно извлекать уроки из совершённых ошибок, чтобы избежать их повторения."
+        },
+        {
+          "en": "By learning from their mistakes, they improved their performance significantly.",
+          "ru": "Благодаря тому, что они учились на своих ошибках, значительно улучшили своё выступление."
+        }
+      ],
+      "note": "говорится о позитивном отношении к ошибкам"
+    },
+    {
+      "w": "agree to disagree",
+      "tr": "согласиться не соглашаться",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Sometimes it's best just to agree to disagree.",
+          "ru": "Иногда лучше просто согласиться не соглашаться."
+        },
+        {
+          "en": "They agreed to disagree about their political views.",
+          "ru": "Они согласились не соглашаться относительно своих политических взглядов."
+        }
+      ],
+      "note": "выражение используется, когда люди не хотят спорить дальше"
+    },
+    {
+      "w": "change one's mind",
+      "tr": "изменить мнение",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I changed my mind and decided to go to the park instead.",
+          "ru": "Я изменил своё мнение и решил пойти в парк вместо этого."
+        },
+        {
+          "en": "She changed her mind several times before booking the flight.",
+          "ru": "Она несколько раз меняла своё мнение перед тем, как забронировать билет."
+        }
+      ],
+      "note": "используется, когда кто-то меняет решение; часто сопровождается словами 'suddenly', 'after thinking about it'"
+    },
+    {
+      "w": "have second thoughts",
+      "tr": "передумать",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "He had second thoughts about accepting the job offer.",
+          "ru": "Он передумал принимать предложение о работе."
+        },
+        {
+          "en": "I didn't want to go at first, but then I had second thoughts.",
+          "ru": "Сначала мне не хотелось идти, но потом я передумала."
+        }
+      ],
+      "note": "более мягкая форма выражения изменения мнения"
+    },
+    {
+      "w": "reconsider",
+      "tr": "пересмотреть",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "Let's reconsider our decision before moving forward.",
+          "ru": "Давайте пересмотрим наше решение, прежде чем двигаться вперёд."
+        },
+        {
+          "en": "She asked me to reconsider my position on the issue.",
+          "ru": "Она попросила меня пересмотреть мою позицию по этому вопросу."
+        }
+      ],
+      "note": "формальное выражение для обсуждения нового варианта решения"
+    },
+    {
+      "w": "think twice",
+      "tr": "подумать дважды",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I was going to say something mean, but then I thought twice.",
+          "ru": "Я собирался сказать что-то плохое, но затем подумал дважды."
+        },
+        {
+          "en": "You should think twice before making such an important decision.",
+          "ru": "Вам следует подумать дважды, прежде чем принимать такое важное решение."
+        }
+      ],
+      "note": "предупреждение о возможных негативных последствиях необдуманного поступка"
+    },
+    {
+      "w": "take it under consideration",
+      "tr": "принять к сведению",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "I'll take your suggestion under consideration and get back to you later.",
+          "ru": "Я приму ваше предложение к сведению и позже вернусь к вам."
+        },
+        {
+          "en": "The committee took all the complaints under consideration before making a final decision.",
+          "ru": "Комитет рассмотрел все жалобы перед принятием окончательного решения."
+        }
+      ],
+      "note": "формальная фраза для обозначения готовности учесть чью-то точку зрения"
+    },
+    {
+      "w": "bring up",
+      "tr": "поднять (тему)",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Could we bring up the idea of organizing a party next week?",
+          "ru": "Можем ли мы поднять идею организации вечеринки на следующей неделе?"
+        },
+        {
+          "en": "I don't want to bring up the subject of money again; it's too sensitive.",
+          "ru": "Мне не хочется снова поднимать тему денег; это слишком чувствительно."
+        }
+      ],
+      "note": "используется для начала обсуждения какой-либо темы"
+    },
+    {
+      "w": "discuss the pros and cons",
+      "tr": "обсудить плюсы и минусы",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "Let's discuss the pros and cons of working from home.",
+          "ru": "Давай обсудим плюсы и минусы работы из дома."
+        },
+        {
+          "en": "When buying a new car, it's important to discuss the pros and cons with your partner.",
+          "ru": "Когда вы покупаете новый автомобиль, важно обсудить плюсы и минусы с вашим партнером."
+        }
+      ],
+      "note": "фраза, используемая для взвешивания различных сторон какого-либо вопроса"
+    }
+  ]
+}
