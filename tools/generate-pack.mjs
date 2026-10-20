@@ -41,7 +41,7 @@ export async function run({ root, date, topic = 'all', level = 'auto', count, pr
     const allKnown = Object.values(known).flat();
     const kTopic = knownWordsOf(known, t);
     const r = await collectItems({
-      generate: p => provider.generate(p), n, description: cfg.description, level: lv,
+      generate: (p, o) => provider.generate(p, o), n, description: cfg.description, level: lv,
       known: allKnown.filter(w => !kTopic.includes(w)).concat(kTopic), log
     });
     const why = Object.entries(r.reasons).map(([k, v]) => `${k}: ${v}`).join('; ') || 'нет';

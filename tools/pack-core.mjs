@@ -12,19 +12,87 @@ For each item give: "w" (the English word or expression, lowercase unless a prop
 "tr" (Russian translation, 1–3 variants separated by "; "),
 "pos" (one of n, v, adj, adv, phr),
 "ex" (exactly 2 examples: objects {"en": natural English sentence of 6–16 words that contains "w" exactly or in an inflected form, "ru": its Russian translation}),
-"note" (optional short Russian usage note, up to 12 words).
-Return only JSON, no markdown: {"items":[...]}`;
+"note" (short Russian usage note, up to 12 words, or "").
+Return only valid JSON, no markdown, no comments, no text before or after it. Use double quotes and no trailing commas.
+Example of the exact format with one item:
+{"items":[{"w":"meet a deadline","tr":"уложиться в срок","pos":"phr","ex":[{"en":"We worked all weekend to meet the deadline for the report.","ru":"Мы работали все выходные, чтобы сдать отчёт в срок."},{"en":"The team met every deadline this quarter.","ru":"В этом квартале команда уложилась во все сроки."}],"note":"часто с глаголами work hard, manage to"}]}`;
 }
 
-// models sometimes wrap JSON in ```json fences or add a sentence around it
+// JSON schema for providers that support structured output (GigaChat response_format, Gemini responseJsonSchema)
+export const ITEMS_SCHEMA = {
+  type: 'object',
+  properties: {
+    items: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          w: { type: 'string', description: 'English word or expression' },
+          tr: { type: 'string', description: 'Russian translation, 1-3 variants separated by "; "' },
+          pos: { type: 'string', description: 'one of: n, v, adj, adv, phr' },
+          ex: {
+            type: 'array',
+            description: 'exactly 2 examples',
+            items: {
+              type: 'object',
+              properties: {
+                en: { type: 'string', description: 'English sentence of 6-16 words containing w' },
+                ru: { type: 'string', description: 'Russian translation of the sentence' }
+              },
+              required: ['en', 'ru']
+            }
+          },
+          note: { type: 'string', description: 'short Russian usage note or empty string' }
+        },
+        required: ['w', 'tr', 'pos', 'ex', 'note']
+      }
+    }
+  },
+  required: ['items']
+};
+
+// end index of the JSON value starting at s[i] ('{' or '['), honouring strings; -1 if it never closes
+function matchEnd(s, i) {
+  const open = s[i], close = open === '{' ? '}' : ']';
+  let depth = 0, str = false;
+  for (let j = i; j < s.length; j++) {
+    const c = s[j];
+    if (str) { if (c === '\\') j++; else if (c === '"') str = false; continue; }
+    if (c === '"') str = true;
+    else if (c === open) depth++;
+    else if (c === close && --depth === 0) return j;
+  }
+  return -1;
+}
+// common model slips: trailing commas, typographic quotes around keys
+const repair = s => s.replace(/,\s*([}\]])/g, '$1').replace(/[“”]/g, '"');
+const tryParse = s => { try { return JSON.parse(s); } catch { try { return JSON.parse(repair(s)); } catch { return undefined; } } };
+
+/**
+ * Pulls items out of a model answer. Whole JSON first; if it is broken (text after it, a cut-off answer,
+ * a bad comma), every complete object that has a "w" field is salvaged on its own.
+ */
 export function extractJSON(text) {
-  let t = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
-  const a = t.indexOf('{'), b = t.lastIndexOf('}');
-  const ar = t.indexOf('['), br = t.lastIndexOf(']');
-  if (ar >= 0 && (a < 0 || ar < a) && br > ar) return { items: JSON.parse(t.slice(ar, br + 1)) };
-  if (a < 0 || b < a) throw new Error('в ответе нет JSON');
-  const obj = JSON.parse(t.slice(a, b + 1));
-  return Array.isArray(obj) ? { items: obj } : obj;
+  const t = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+  for (let i = 0; i < t.length; i++) {
+    if (t[i] !== '{' && t[i] !== '[') continue;
+    const end = matchEnd(t, i);
+    if (end < 0) break;
+    const v = tryParse(t.slice(i, end + 1));
+    if (Array.isArray(v)) return { items: v };
+    if (v && Array.isArray(v.items)) return v;
+    break;
+  }
+  const items = [];
+  for (let i = 0; i < t.length; i++) {
+    if (t[i] !== '{') continue;
+    const end = matchEnd(t, i);
+    if (end < 0) continue;
+    const v = tryParse(t.slice(i, end + 1));
+    if (v && typeof v === 'object' && !Array.isArray(v) && (v.w || v.word)) { items.push(v); i = end; }
+  }
+  if (!items.length) throw new Error('в ответе нет разборчивого JSON');
+  return { items, salvaged: true };
 }
 
 // ISO week number: levels alternate week by week
@@ -54,32 +122,40 @@ export function addToIndex(index, meta, date) {
 }
 
 /**
- * Ask the model until enough items pass validation (first try + up to `retries` more).
- * generate: async prompt -> text. Returns {items, requested, reasons, attempts, error?}.
+ * Asks the model in batches of up to `batch` items until n items pass validation.
+ * Request budget: the batches n needs, plus `retries` extra per batch (n=20, batch=10, retries=2 → 6 requests).
+ * generate: async (prompt, {schema}) -> text. Returns {items, requested, reasons, attempts, error?}.
  */
-export async function collectItems({ generate, n, description, level, known, retries = 2, log = () => {} }) {
+export async function collectItems({ generate, n, description, level, known, retries = 2, batch = 10, log = () => {} }) {
   const knownSet = [...known];
   const target = Math.ceil(n * 0.7);
+  const maxRequests = Math.ceil(n / batch) * (1 + retries);
   let items = [], requested = 0, attempts = 0;
   const reasons = {};
-  while (attempts <= retries && items.length < target) {
+  const count = (k, v = 1) => { reasons[k] = (reasons[k] || 0) + v; };
+  while (attempts < maxRequests && items.length < n) {
     attempts++;
     const have = items.map(x => x.w);
-    const prompt = buildPrompt({ n: n - items.length + 4, description, level, knownSample: have.concat(knownSet.slice(-300)).slice(0, 320) });
-    let raw = [];
+    // ask for a few extra: some answers repeat known words or fail the checks
+    const ask = Math.min(batch, n - items.length) + 2;
+    const prompt = buildPrompt({ n: ask, description, level, knownSample: have.concat(knownSet.slice(-300)).slice(0, 320) });
+    let raw = [], salvaged = false;
     try {
-      const data = extractJSON(await generate(prompt));
+      const data = extractJSON(await generate(prompt, { schema: ITEMS_SCHEMA }));
       raw = Array.isArray(data.items) ? data.items : [];
+      salvaged = !!data.salvaged;
     } catch (e) {
-      reasons['ошибка ответа: ' + e.message] = (reasons['ошибка ответа: ' + e.message] || 0) + 1;
-      log(`  попытка ${attempts}: ${e.message}`);
+      // a short label, not the whole parser message, so the summary groups similar failures
+      count('ответ не разобран');
+      log(`  запрос ${attempts}: ответ не разобран (${e.message})`);
       continue;
     }
+    if (salvaged) count('ответ с ошибками JSON, слова извлечены по одному');
     requested += raw.length;
     const r = validateItems(raw, knownSet.concat(have));
-    Object.entries(r.reasons).forEach(([k, v]) => { reasons[k] = (reasons[k] || 0) + v; });
+    Object.entries(r.reasons).forEach(([k, v]) => count(k, v));
     items = items.concat(r.items);
-    log(`  попытка ${attempts}: получено ${raw.length}, прошло проверку ${r.items.length}, всего ${items.length}`);
+    log(`  запрос ${attempts}: получено ${raw.length}${salvaged ? ' (JSON с ошибками)' : ''}, прошло проверку ${r.items.length}, всего ${items.length} из ${n}`);
   }
   items = items.slice(0, n);
   const out = { items, requested, reasons, attempts };

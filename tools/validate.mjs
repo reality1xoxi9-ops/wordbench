@@ -71,9 +71,40 @@ export function wordInSentence(w, sentence) {
 
 const wordCount = s => (String(s).trim().match(/\S+/g) || []).length;
 
+// models name fields their own way: examples/example, english/russian, translation as an array, etc.
+// first non-empty field among keys; an array of strings counts too ("tr": ["a", "b"] -> "a; b")
+const pickStr = (o, keys) => {
+  for (const k of keys) {
+    const v = o[k];
+    if (typeof v === 'string' && v.trim()) return v;
+    if (Array.isArray(v) && v.length && v.every(x => typeof x === 'string')) return v.join('; ');
+  }
+  return '';
+};
+export function normalizeItem(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  const it = Object.assign({}, raw);
+  it.w = pickStr(raw, ['w', 'word', 'expression', 'phrase', 'term']);
+  it.tr = pickStr(raw, ['tr', 'translation', 'ru', 'russian']);
+  it.pos = pickStr(raw, ['pos', 'part_of_speech', 'partOfSpeech']);
+  let ex = raw.ex ?? raw.examples ?? raw.example ?? [];
+  if (!Array.isArray(ex)) ex = [ex];
+  it.ex = ex.map(e => {
+    if (typeof e === 'string') {
+      // "English sentence — Русский перевод"
+      const m = e.split(/\s+[—–-]\s+/);
+      return m.length >= 2 ? { en: m[0], ru: m.slice(1).join(' — ') } : { en: e, ru: '' };
+    }
+    if (!e || typeof e !== 'object') return { en: '', ru: '' };
+    return { en: pickStr(e, ['en', 'english', 'sentence', 'text', 'example']), ru: pickStr(e, ['ru', 'russian', 'translation']) };
+  });
+  return it;
+}
+
 // returns {item} with a cleaned copy, or {reason}
 export function checkItem(raw, known) {
   if (!raw || typeof raw !== 'object') return { reason: 'не объект' };
+  raw = normalizeItem(raw);
   const w = normW(raw.w);
   if (!w) return { reason: 'пустое слово' };
   if (w.length > MAX_W) return { reason: 'слово длиннее 40 символов' };
