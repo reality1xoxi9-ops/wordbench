@@ -1,0 +1,310 @@
+{
+  "id": "2026-10-20-build-b2",
+  "title": "Строительство · B2 · 20 окт",
+  "topic": "build",
+  "level": "B2",
+  "created": "2026-10-20",
+  "provider": "gigachat",
+  "items": [
+    {
+      "w": "safety goggles",
+      "tr": "защитные очки",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Welders must always wear safety goggles when working with hot metals.",
+          "ru": "Сварщики всегда должны надевать защитные очки при работе с горячими металлами."
+        },
+        {
+          "en": "She cleaned her safety goggles before continuing the job.",
+          "ru": "Она протёрла защитные очки перед тем, как продолжить работу."
+        }
+      ]
+    },
+    {
+      "w": "high-visibility vest",
+      "tr": "светоотражающая жилетка",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Construction workers were required to wear high-visibility vests during night shifts.",
+          "ru": "Рабочие обязаны были носить светоотражающие жилетки во время ночных смен."
+        },
+        {
+          "en": "I saw a worker wearing a bright orange high-visibility vest.",
+          "ru": "Я видел рабочего в яркой оранжевой светоотражающей жилетке."
+        }
+      ]
+    },
+    {
+      "w": "ear protection",
+      "tr": "защита слуха; беруши/наушники",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Workers should use ear protection around noisy machinery.",
+          "ru": "Работники должны пользоваться защитой слуха рядом с шумным оборудованием."
+        },
+        {
+          "en": "They provided us with ear protection for our shift in the noisy workshop.",
+          "ru": "Они выдали нам защиту слуха для нашей смены в шумном цехе."
+        }
+      ]
+    },
+    {
+      "w": "fall arrest system",
+      "tr": "система предотвращения падения",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The scaffolding was equipped with a fall arrest system to ensure worker safety.",
+          "ru": "Опалубка была оборудована системой предотвращения падений для обеспечения безопасности рабочих."
+        },
+        {
+          "en": "When working at heights, it's essential to use a fall arrest system.",
+          "ru": "При работе на высоте крайне важно использовать систему предотвращения падений."
+        }
+      ]
+    },
+    {
+      "w": "steel-toed boots",
+      "tr": "ботинки с металлическими носками",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Steel-toed boots are mandatory for all personnel on the construction site.",
+          "ru": "Ботинки с металлическими носками обязательны для всех сотрудников на стройплощадке."
+        },
+        {
+          "en": "He slipped on wet concrete but thankfully wore steel-toed boots.",
+          "ru": "Он поскользнулся на мокром бетоне, но, слава богу, носил ботинки с металлическими носками."
+        }
+      ]
+    },
+    {
+      "w": "rescue rope",
+      "tr": "спасательный трос",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "In case of emergency, there is a rescue rope available near the construction crane.",
+          "ru": "В случае чрезвычайной ситуации имеется спасательный трос возле строительного крана."
+        },
+        {
+          "en": "They lowered the injured worker down using a rescue rope.",
+          "ru": "Они спустили пострадавшего вниз с помощью спасательного троса."
+        }
+      ]
+    },
+    {
+      "w": "first aid kit",
+      "tr": "медицинская аптечка",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Each construction crew has a first aid kit on-site for emergencies.",
+          "ru": "У каждой бригады строителей на площадке есть медицинская аптечка для экстренных случаев."
+        },
+        {
+          "en": "She applied first aid from the kit after someone cut their finger.",
+          "ru": "Она оказала первую помощь из аптечки, когда кто-то порезал палец."
+        }
+      ]
+    },
+    {
+      "w": "fire extinguisher",
+      "tr": "огнетушитель",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "There are fire extinguishers placed throughout the construction site.",
+          "ru": "На строительной площадке установлены огнетушители."
+        },
+        {
+          "en": "He used a fire extinguisher to put out the small fire in the warehouse.",
+          "ru": "Он использовал огнетушитель, чтобы потушить небольшой пожар в складе."
+        }
+      ]
+    },
+    {
+      "w": "slip-resistant shoes",
+      "tr": "нескользящая обувь",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Slip-resistant shoes are recommended for working on slippery surfaces like wet floors.",
+          "ru": "Носковая нескользящая обувь рекомендуется для работы на скользких поверхностях, таких как мокрые полы."
+        },
+        {
+          "en": "He wore slip-resistant shoes to avoid falling on the wet stairs.",
+          "ru": "Он надел нескользящую обувь, чтобы не упасть на мокрых ступеньках."
+        }
+      ]
+    },
+    {
+      "w": "chain barrier",
+      "tr": "цепной барьер",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "A chain barrier was set up around the excavation area for safety reasons.",
+          "ru": "Цепной барьер установили вокруг зоны раскопок по соображениям безопасности."
+        },
+        {
+          "en": "Visitors were asked to stay behind the chain barrier for their own safety.",
+          "ru": "Посетителям было предложено оставаться позади цепного барьера ради своей безопасности."
+        }
+      ]
+    },
+    {
+      "w": "safety briefing",
+      "tr": "инструктаж по технике безопасности",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Before starting work, everyone received a safety briefing from the site manager.",
+          "ru": "Перед началом работ каждый получил инструктаж по технике безопасности от менеджера проекта."
+        },
+        {
+          "en": "During the safety briefing, they explained how to use the fall arrest system correctly.",
+          "ru": "Во время инструктажа по технике безопасности им объяснили, как правильно пользоваться системой предотвращения падений."
+        }
+      ]
+    },
+    {
+      "w": "contract",
+      "tr": "контракт; договор",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "They signed a contract with the client last week.",
+          "ru": "Они подписали контракт с клиентом на прошлой неделе."
+        },
+        {
+          "en": "The construction company is reviewing the contract terms.",
+          "ru": "Строительная компания рассматривает условия контракта."
+        }
+      ]
+    },
+    {
+      "w": "estimate",
+      "tr": "оценка стоимости; смета",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The estimate includes labor costs and material expenses.",
+          "ru": "Оценка включает затраты на рабочую силу и материалы."
+        },
+        {
+          "en": "Can you provide an estimate for the renovation project?",
+          "ru": "Вы можете предоставить оценку для проекта реконструкции?"
+        }
+      ]
+    },
+    {
+      "w": "invoice",
+      "tr": "счет-фактура",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "Please send us the final invoice for the completed work.",
+          "ru": "Пожалуйста, отправьте нам итоговый счет-фактуру за выполненные работы."
+        },
+        {
+          "en": "The contractor sent an invoice for $5000.",
+          "ru": "Подрядчик отправил счет-фактуру на сумму 5000 долларов."
+        }
+      ]
+    },
+    {
+      "w": "sign off",
+      "tr": "подписывать (документ); утверждать",
+      "pos": "phr",
+      "ex": [
+        {
+          "en": "The client needs to sign off on the final invoice before payment.",
+          "ru": "Клиент должен подписать окончательный счет-фактуру перед оплатой."
+        },
+        {
+          "en": "The project manager signed off on the construction plan.",
+          "ru": "Менеджер проекта утвердил план строительства."
+        }
+      ]
+    },
+    {
+      "w": "due date",
+      "tr": "срок оплаты; дата оплаты",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The due date for the invoice is 30 days from the completion date.",
+          "ru": "Дата оплаты счета-фактуры – через 30 дней после даты завершения работ."
+        },
+        {
+          "en": "Make sure to pay the invoice within the due date to avoid late fees.",
+          "ru": "Убедитесь, что оплатите счет-фактуру в срок, чтобы избежать пени за просрочку."
+        }
+      ]
+    },
+    {
+      "w": "payment term",
+      "tr": "условие оплаты; порядок расчетов",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The payment term in our contract is net 30 days.",
+          "ru": "Срок оплаты по нашему контракту составляет 30 дней после выставления счета."
+        },
+        {
+          "en": "What are the payment terms for this project?",
+          "ru": "Какие условия оплаты предусмотрены для этого проекта?"
+        }
+      ]
+    },
+    {
+      "w": "reimbursement",
+      "tr": "возмещение расходов",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The contractor requested reimbursement for travel expenses.",
+          "ru": "Подрядчик попросил возмещение расходов на проезд."
+        },
+        {
+          "en": "Will there be any reimbursements for additional materials used?",
+          "ru": "Будут ли возмещены расходы на дополнительные материалы?"
+        }
+      ]
+    },
+    {
+      "w": "waive",
+      "tr": "освобождать от уплаты; аннулировать",
+      "pos": "v",
+      "ex": [
+        {
+          "en": "The client waived the late fee because the payment was made on time.",
+          "ru": "Клиент освободил нас от уплаты штрафа за просрочку, поскольку оплата была произведена вовремя."
+        },
+        {
+          "en": "Can we waive the penalty if we complete the project ahead of schedule?",
+          "ru": "Можно ли освободить нас от штрафа, если мы завершим проект раньше срока?"
+        }
+      ]
+    },
+    {
+      "w": "liability",
+      "tr": "ответственность; обязательство",
+      "pos": "n",
+      "ex": [
+        {
+          "en": "The contractor assumed full liability for any damages during construction.",
+          "ru": "Подрядчик взял на себя полную ответственность за любые повреждения во время строительства."
+        },
+        {
+          "en": "There is a clause in the contract regarding liability for delays.",
+          "ru": "В договоре есть пункт об ответственности за задержки."
+        }
+      ]
+    }
+  ]
+}

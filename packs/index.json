@@ -1,5 +1,16 @@
 {
   "v": 1,
-  "updated": "",
-  "packs": []
+  "updated": "2026-10-20",
+  "packs": [
+    {
+      "id": "2026-10-20-build-b2",
+      "file": "packs/2026-10-20-build-b2.json",
+      "title": "Строительство · B2 · 20 окт",
+      "topic": "build",
+      "level": "B2",
+      "count": 20,
+      "created": "2026-10-20",
+      "provider": "gigachat"
+    }
+  ]
 }
